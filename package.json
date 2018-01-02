@@ -1,0 +1,23 @@
+{
+  "name": "automata",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ls",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/mocha test --compilers ls:livescript"
+  },
+  "keywords": [],
+  "author": "lesh <lesh@sysphere.org> (http://lesh.sysphere.org)",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "leshdash": "git://github.com/leshy/leshdash.git"
+  },
+  "devDependencies": {
+    "livescript": "^1.5.0",
+    "mocha": "^4.1.0"
+  }
+}
