@@ -1,5 +1,5 @@
 # Abstract cellular automata simulator
-# we support arbitrary dimensions as well as cell shapes
+# arbitrary dimensions and cell shapes
 
 require! {
   immutable: { Map }: i
