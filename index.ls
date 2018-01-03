@@ -1,32 +1,59 @@
-# Abstract cellular automata simulator
-# arbitrary dimensions and cell shapes
+# Abstract cellular automata simulator (arbitrary dimensions and cell shapes)
 
 require! {
-  immutable: { Map }: i
-  leshdash: { each, times, zip, defaults, mapFilter }: _
+  immutable: { Map, Seq }: i
+  leshdash: { reduce, each, times, zip, defaults, mapFilter, { typeCast }: w }: _  
 }
 
 
-export class Field
+export class SpaceSpecification
+  get: typeCast Location, (loc) -> throw Error "not implemented"
+  set: typeCast Location, (loc, state) -> throw Error "not implemented"
+  states: ->* throw Error "not implemented"
+  next: ->
+    @states!
+    .reduce do
+      (total, state, location) -> total.set location, ...state.next()
+      new @constructor!
+
+  toJSON: ->
+    @states!
+    .reduce do
+      (total, state, location) -> total <<< { "#{location}": state.inspect() }
+      {}
+
+
+export class Space extends SpaceSpecification
   (data) ->
     if data then @ <<< data
     if not @data then @data = new Map()
 
   get: (loc) ->
-    @data.get(loc.join('-'))
+    @data.get loc.join('-')
         
-  set: (loc, state) ->
-    new Field data: @data.set(loc.join('-'), state)
+  set: (loc, ...states) ->
+    loc = switch loc@@
+      | String => loc
+      | Array => loc.join('-')
+      | _ => throw new Error loc + " is not a loc"
 
-  neighbourCoords: (coords) ->
+    newData = reduce states, ((data, state) -> data.set loc, state), @data
+    new @@ data: newData
+
+  neighbourLocs: typeCast Location, (loc, depth=1) ->
     throw Error "not implemented"
-    
+  
+  states: ->
+    @data.toKeyedSeq()
 
-export class Loc
+  inspect: -> "Sim(" + @data.reduce(((total, val, key) ->  total + " " + key + ":" + val.inspect?!), "") + " )"
+
+export class Location
   (@coords, @field) -> void
+  
   set: (state) -> @field.set @coords, state
 
-  neighbourCoords: -> @field.neighbourCoords @coords
+  neighbourLocs: (depth) -> @field.neighbourLocs @coords, depth
     
   neighbours: ->
     each @neighbourCoords!, (loc) ->
@@ -38,8 +65,10 @@ export class State
     each @loc.neighbourCoords!, (loc) ->
       if (state = loc.state)? then state else void
 
-  next: ->
-    throw Error "not implemented"
+  inspect: -> "State"
+  
+  next: (location) ->
+    return [ new State() ]
 
 
 export class LAbsState 
@@ -63,11 +92,8 @@ export class LCheckState extends LAbsState
     if state = @checkState! then @setChecks!
     return state
 
-
-
-
   
-export class Life extends Field
+export class Life extends Space
   next: (state, loc) ->
     nn = mapFilter loc.neighbours(), (.state)
     return switch state
@@ -76,6 +102,3 @@ export class Life extends Field
       | void => void
 
     
-
-
-
