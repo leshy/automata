@@ -1,35 +1,55 @@
-# Abstract cellular automata simulator (arbitrary dimensions and cell shapes)
+#
+# abstract automata simulator
+#
+# arbitrary machines running on arbitrary topologies,
+# (stuff like stohastic or deterministic machines in continuous or discrete spaces)
+#
+# machines implemented as RAM-machines, generative grammars, blind or with perception, etc
+# so should be able to simulate L-systems, CA, brownian motion, boids, etc
+# should be able to run in spaces with arbitrary numbers of dimensions, on graph structures, hexagonal grids, etc
+# 
+# spaces as immutable objects, machines as functions
+#
+# views, storage and controllers as plugins
+#
 
 require! {
   immutable: { Map, Seq }: i
-  leshdash: { reduce, each, times, zip, defaults, mapFilter, { typeCast }: w }: _  
+  leshdash: { reduce, each, times, zip, defaults, mapFilter, { typeCast }: w }: _
 }
 
 
-export class SpaceSpecification
-  get: typeCast Location, (loc) -> throw Error "not implemented"
-  set: typeCast Location, (loc, state) -> throw Error "not implemented"
-  states: ->* throw Error "not implemented"
+export class SpaceSpec
+  get: typeCast LocSpec, (ctx) -> ...
+  set: typeCast LocSpec, (ctx, state) -> ...
+  
+  states: ->* ...
+  
   next: ->
-    @states!
-    .reduce do
-      (total, state, location) -> total.set location, ...state.next()
+    @states!reduce do
+      (total, state, ctx) -> total.set ctx, state(ctx)
       new @constructor!
 
-  toJSON: ->
-    @states!
-    .reduce do
-      (total, state, location) -> total <<< { "#{location}": state.inspect() }
+  toObject: ->
+    @states!reduce do
+      (total, state, location) -> total <<< {"#{location}": state.inspect!}
       {}
 
 
-export class Space extends SpaceSpecification
+export class LocSpec
+  transform: (transformations={}, state) -> ...
+
+export class StateSpec
+  -> ...
+
+
+export class BlockSpace extends SpaceSpec
   (data) ->
     if data then @ <<< data
     if not @data then @data = new Map()
 
   get: (loc) ->
-    @data.get loc.join('-')
+    @data.get loc.join '-'
         
   set: (loc, ...states) ->
     loc = switch loc@@
@@ -43,15 +63,13 @@ export class Space extends SpaceSpecification
   neighbourLocs: typeCast Location, (loc, depth=1) ->
     throw Error "not implemented"
   
-  states: ->
-    @data.toKeyedSeq()
+  states: -> @data.toKeyedSeq()
 
   inspect: -> "Sim(" + @data.reduce(((total, val, key) ->  total + " " + key + ":" + val.inspect?!), "") + " )"
 
-export class Location
+
+export class Context2D
   (@coords, @field) -> void
-  
-  set: (state) -> @field.set @coords, state
 
   neighbourLocs: (depth) -> @field.neighbourLocs @coords, depth
     
@@ -60,45 +78,47 @@ export class Location
       if (state = loc.state)? then state else void
 
 
-export class State
-  neighbours: ->
-    each @loc.neighbourCoords!, (loc) ->
-      if (state = loc.state)? then state else void
-
-  inspect: -> "State"
+CheckLife = (ctx) ->
+  if neighbours(ctx).length in [ 2, 3 ] then Life
   
-  next: (location) ->
-    return [ new State() ]
+Life = (ctx) ->
+  if ctx.neighbours().length in [ 2, 3 ] then Life
+  else map ctx.neighbourLocs(), (location) -> ctx.transform location, CheckLife
+  
+Spiral = (ctx) -> return do
+  ctx.set 'circle'
+  ctx.transform r: 46, x: 1, s: (* 1.01), Spiral
 
 
-export class LAbsState 
-  checkState: -> 
-    nlen = @neighbours!length
-    if nlen in [ 2, 3 ] then return State
-    if nlen < 2 then return void
-    if nlen > 3 then return void
-      
-  setChecks: -> each @neighbourCoords, (loc) -> @field.set loc, LCheckState
+SierpinskiA = (ctx) -> return do
+  SierpinsskiB
+  ctx.transform r: 60, do
+    SierpinsskiA
+    ctx.transform r: 60, do
+      SierpinsskiB
+
+SierpinsskiB = (ctx) -> return do
+  SierpinsskiA
+  ctx.transform r: -60, do
+    SierpinsskiB
+    ctx.transform r: -60, do
+      SierpinsskiA
 
 
-export class Lstate extends LAbsState
-  next: ->
-    if not state = @checkState then @setChecks!
-    return state
+SierpinsskiA = (ctx) -> return do
+  SierpinsskiA
+  SierpinsskiR
+  SierpinsskiB
+  SierpinsskiR
+  SierpinsskiA
+
+SierpinsskiB = (ctx) -> return do
+  SierpinsskiB
+  SierpinsskiL
+  SierpinsskiA
+  SierpinsskiL
+  SierpinsskiB
 
 
-export class LCheckState extends LAbsState
-  next: ->
-    if state = @checkState! then @setChecks!
-    return state
 
   
-export class Life extends Space
-  next: (state, loc) ->
-    nn = mapFilter loc.neighbours(), (.state)
-    return switch state
-      | 2 => void
-      | 1 => void
-      | void => void
-
-    
