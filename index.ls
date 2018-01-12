@@ -1,81 +1,135 @@
-#
 # abstract automata simulator
 #
-# arbitrary machines running on arbitrary topologies,
-# (stuff like stohastic or deterministic machines in continuous or discrete spaces)
+# arbitrary machines running on arbitrary topologies.
 #
-# machines implemented as RAM-machines, generative grammars, blind or with perception, etc
-# so should be able to simulate L-systems, CA, brownian motion, boids, etc
-# should be able to run in spaces with arbitrary numbers of dimensions, on graph structures, hexagonal grids, etc
-# 
-# spaces as immutable objects, machines as functions
+# so spaces can be continuous or discrete, have arbitrary number of dimensions, be graph structures, hexagonal grids, etc
+# machines can be stohastic or deterministic, implemented as RAM-machines, generative grammars, blind or with perception, etc
+#  
+# should be able to simulate transformation rule based generation like L-systems, brownian motion etc..
+# or stuff that perceves, like CA, boids, etc.
+#
+# spaces are immutable objects, machines are functions returning other machines potentially with their location transformed
 #
 # views, storage and controllers as plugins
 #
 
 require! {
   immutable: { Map, Seq }: i
-  leshdash: { reduce, each, times, zip, defaults, mapFilter, { typeCast }: w }: _
+  util: { inspect }
+  leshdash: {
+    reduce, each, times, zip, defaults, mapFilter, assignInWith, flatten, map, keys,
+    { typeCast }: w
+  }: _
 }
 
-
-export class SpaceSpec
-  get: typeCast LocSpec, (ctx) -> ...
-  set: typeCast LocSpec, (ctx, state) -> ...
+export class State
+  -> ...
   
-  states: ->* ...
+
+export class Ctx
+  applyTransform: (transformations={}) -> ...
+  inspect: -> "Ctx(" + JSON.stringify({} <<< @) + ")"
+  transform: (modifier) ->
+    (...states) ~>  
+      map flatten(states), (state) ~>
+        new CtxState ...switch state@@
+          | Function => [ @applyTransform(modifier), state ]
+          | CtxState => [ state.ctx.applyTransform(modifier), state.state ]
+          
+export class CtxState
+  inspect: -> "CtxState(" + JSON.stringify(@ctx) + ", " + @state.name + ")"
+  (@ctx, @state) -> true        
+          
+export class Space
+  contextClass: Ctx
+  
+  get: (ctx) -> ...
+  
+  set: (ctxState) -> ...
+  
+  states: -> ...
   
   next: ->
     @states!reduce do
-      (total, state, ctx) -> total.set ctx, state(ctx)
+      (space, state, ctx) ~>
+        
+        newStates = state ctx
+        if newStates@@ isnt Array then newStates = Array newStates
+        
+        reduce do
+          newStates
+          (space, newState) ~>
+            space.set switch newState@@
+              | Function => new CtxState ctx, newState
+              | CtxState => newState
+              | _ => throw "xxwat"
+          space
+            
       new @constructor!
 
   toObject: ->
     @states!reduce do
-      (total, state, location) -> total <<< {"#{location}": state.inspect!}
+      (total, state, ctx) -> total <<< {"#{ctx}": state.inspect!}
       {}
 
 
-export class LocSpec
-  transform: (transformations={}, state) -> ...
 
-export class StateSpec
-  -> ...
+radianConstant = Math.PI / 180
+radians = (d) -> d * radianConstant
+
+export class CanvasCtx extends Ctx
+  (data={}) -> @ <<< { s: 1 } <<< data
+  
+  _applyVector: (v1, v2, angle, size=1) ->
+    x = (v2.x or 0) * size
+    y = (v2.y or 0) * size
+    r = radians angle
+    x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
+    y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
+
+    { x: v1.x + x2, y: v1.y + y2 }
+
+  applyTransform: (mod) ->
+    ctx = new @constructor @
+    
+    cvector = ctx{x, y}
+    mvector = mod{x, y}
+    
+    normalizeRotation = (angle) -> r: angle % 360
+    
+    standardJoin = (target, mod, ctx) ->
+      if not target? then return mod
+      if not mod? then return target
+      if mod@@ is Function then return mod target, ctx
+      mod + target
+
+    assignInWith(ctx, mod, standardJoin)
+      <<< @_applyVector(cvector, mvector, ctx.r, ctx.s)
+      <<< normalizeRotation(ctx.r)
+
+    if ctx.s > 0.9 then ctx else void
 
 
-export class BlockSpace extends SpaceSpec
+export class CanvasSpace
+#  contextClass: CanvasContext
   (data) ->
     if data then @ <<< data
     if not @data then @data = new Map()
 
-  get: (loc) ->
-    @data.get loc.join '-'
+  get: (ctx) ->
+    @data.get switch ctx?@@
+      | @contextClass => @data.get ctx.key()
+      | String => @data.get ctx
+      |_ => throw new Error "not a context"
         
-  set: (loc, ...states) ->
-    loc = switch loc@@
-      | String => loc
-      | Array => loc.join('-')
-      | _ => throw new Error loc + " is not a loc"
-
-    newData = reduce states, ((data, state) -> data.set loc, state), @data
-    new @@ data: newData
-
-  neighbourLocs: typeCast Location, (loc, depth=1) ->
-    throw Error "not implemented"
-  
-  states: -> @data.toKeyedSeq()
-
-  inspect: -> "Sim(" + @data.reduce(((total, val, key) ->  total + " " + key + ":" + val.inspect?!), "") + " )"
-
-
-export class Context2D
-  (@coords, @field) -> void
-
-  neighbourLocs: (depth) -> @field.neighbourLocs @coords, depth
+  set: (ctx, ...states) ->
+    ctx = switch ctx?@@
+      | @contextClass => ctx.key()
+      | String => ctx
+      |_ => throw new Error "not a context"
     
-  neighbours: ->
-    each @neighbourCoords!, (loc) ->
-      if (state = loc.state)? then state else void
+    new @constructor do
+      data: reduce states, ((data, state) -> data.set loc, state), @data
 
 
 CheckLife = (ctx) ->
@@ -90,35 +144,21 @@ Spiral = (ctx) -> return do
   ctx.transform r: 46, x: 1, s: (* 1.01), Spiral
 
 
-SierpinskiA = (ctx) -> return do
-  SierpinsskiB
-  ctx.transform r: 60, do
-    SierpinsskiA
-    ctx.transform r: 60, do
-      SierpinsskiB
+# 2D context
+SierpinskiA = (ctx) ->
+  ctx.transform(r:60) do
+    SierpinskiB
+    ctx.transform(r:60) do
+      SierpinskiA
+      ctx.transform(r:60) SierpinskiB
 
-SierpinsskiB = (ctx) -> return do
-  SierpinsskiA
-  ctx.transform r: -60, do
-    SierpinsskiB
-    ctx.transform r: -60, do
-      SierpinsskiA
+SierpinskiB = (ctx) ->
+  ctx.transform(r:-60) do
+    SierpinskiA
+    ctx.transform(r:-60) do
+      SierpinskiB
+      ctx.transform(r:-60) SierpinskiA
 
+ctx = new CanvasCtx s: 10, r: 0, x: 0, y:0
+console.log SierpinskiA ctx
 
-SierpinsskiA = (ctx) -> return do
-  SierpinsskiA
-  SierpinsskiR
-  SierpinsskiB
-  SierpinsskiR
-  SierpinsskiA
-
-SierpinsskiB = (ctx) -> return do
-  SierpinsskiB
-  SierpinsskiL
-  SierpinsskiA
-  SierpinsskiL
-  SierpinsskiB
-
-
-
-  
