@@ -27,12 +27,18 @@ export class CtxState
   inspect: -> "CtxState(" + JSON.stringify(@ctx) + ", " + @state.name + ")"
   (@ctx, @state) ->
     if @state@@ isnt Function then throw Error "wrong state type"
-    if @ctx@@ not in [ Ctx, CanvasCtx ]
-      console.log @ctx
-      throw Error "wrong ctx type"
       
   next: ->
     return @state(@ctx)
+    
+applyVector = (v1, v2, angle, size=1) ->
+  x = (v2.x or 0) * size
+  y = (v2.y or 0) * size
+  r = radians angle
+  x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
+  y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
+
+  { x: v1.x + x2, y: v1.y + y2 }
     
             
 
@@ -75,7 +81,7 @@ export class Topology
 radianConstant = Math.PI / 180
 radians = (d) -> d * radianConstant
 
-export class CanvasCtx extends Ctx
+export class Ctx2D extends Ctx
   (data={}) -> @ <<< {s: 1, r: 0, x: 0, y: 0} <<< data
   
   _applyVector: (v1, v2, angle, size=1) ->
@@ -103,10 +109,14 @@ export class CanvasCtx extends Ctx
 
     assignInWith(ctx, mod, standardJoin)
       <<< @_applyVector(cvector, mvector, ctx.r, ctx.s)
-      <<< normalizeRotation(ctx.r)
+      <<< normalizeRotation(ctx.r + mod.r)
 
     ctx
-    
+
+export class CtxCanvas extends Ctx2D
+  line: ->
+    true
+            
 CheckLife = (ctx) ->
   if neighbours(ctx).length in [ 2, 3 ] then Life
   
@@ -119,18 +129,13 @@ Spiral = (ctx) -> return do
   ctx.transform r: 46, x: 1, s: (* 1.01), Spiral
 
 SierpinskiA = (ctx) ->
-  ctx.transform(r:60, x: 10) do
-    SierpinskiB
-    ctx.transform(r:60) do
-      SierpinskiA
-      ctx.transform(r:60) SierpinskiB
-
-SierpinskiB = (ctx) ->
-  ctx.transform(r: -60, x: 10) do
+  ctx.transform(s: (/3), r: 60, x: 1) do
     SierpinskiA
-    ctx.transform(r: -60) do
-      SierpinskiB
-      ctx.transform(r: -60) SierpinskiA
+    ctx.transform(r: 60, x: 1) do
+      SierpinskiA
+      ctx.transform(r: 60, x: 1) do
+        SierpinskiA
+
 
 export class BlindTopology extends Topology
   (data) ->
@@ -145,12 +150,60 @@ export class BlindTopology extends Topology
   states: -> @data
     
   set: (ctxState) ->
-    if ctxState@@ isnt CtxState then ctxState = new CtxState(new CanvasCtx(), ctxState)
     new @constructor data: @data.push ctxState
 
+topo = new BlindTopology!
+  .set new CtxState(new CtxCanvas(x: 50, y: 20, s: 10, r: 0), SierpinskiA)
+  
+#  .next!
+  #.next!
+  # .next!
+  # .next!
+  # .next!
+  
 
-#seed = new CtxState new CanvasCtx(), SierpinskiA
-#console.log seed.next()
+global.draw = ->
+  global.c = c = document.getElementById('canvas').getContext('2d')
+  c.canvas.width  = window.innerWidth;
+  c.canvas.height = window.innerHeight;
+  
+  #c.canvas.width  = document.body.clientWidth;
+  #c.canvas.height = document.body.clientHeight;
 
-topo = new BlindTopology!set SierpinskiA
-console.log topo.next!next!next!inspect!
+  
+  c.strokeStyle = 'white';
+
+  render = (rendering) -> 
+    rendering.states().map (ctxState) ->
+      { ctx, state } = ctxState
+
+      scale = 20
+      c.beginPath();
+      c.arc(ctx.x * scale, ctx.y * scale, ctx.s * 3, 0, 2*Math.PI);
+      c.stroke();
+
+
+      # ctx.x = ctx.x
+      # ctx.y = ctx.y
+      # c.beginPath();
+      
+      # c.moveTo(ctx.x * scale, ctx.y * scale);
+      
+      # { x, y } = applyVector({ x: 0, y: 0}, { x: -ctx.s * 2, y: 0 }, ctx.r, 1)
+      
+      # c.lineTo((ctx.x + x) * scale, (ctx.y + y) * scale);
+      # c.stroke();
+
+
+      # c.beginPath();
+      # c.arc(ctx.x * 10,ctx.y * 10, 5,0,2*Math.PI);
+      # c.stroke();
+  render(rendering = topo)
+  console.log rendering
+  render(rendering = rendering.next!)
+  console.log rendering
+#  render(rendering = rendering.next!)
+#  console.log rendering
+  # render(rendering = rendering.next!)
+  # render(rendering = rendering.next!)
+  # render(rendering = rendering.next!)

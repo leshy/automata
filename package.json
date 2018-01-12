@@ -7,7 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha test/*.ls"
+    "test": "./node_modules/.bin/mocha test/*.ls",
+    "devserver": "./node_modules/.bin/budo index.ls:bundle.js --live -- -t browserify-livescript",
+    "make": "./node_modules/.bin/browserify -dt browserify-livescript -o bundle.js index.ls"
   },
   "keywords": [],
   "author": "lesh <lesh@sysphere.org> (http://lesh.sysphere.org)",
@@ -17,6 +19,9 @@
     "leshdash": "git://github.com/leshy/leshdash.git"
   },
   "devDependencies": {
+    "browserify": "^15.1.0",
+    "browserify-livescript": "^0.2.4",
+    "budo": "^10.0.4",
     "livescript": "^1.5.0",
     "mocha": "^4.1.0"
   }
