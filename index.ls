@@ -21,12 +21,12 @@ export class Ctx
         new CtxState ...switch state@@
           | Function => [ @applyTransform(modifier), state ]
           | CtxState => [ state.ctx.applyTransform(modifier), state.state ]
-          
+
 # tuple holding a state within a context
 export class CtxState
   inspect: -> "CtxState(" + JSON.stringify(@ctx) + ", " + @state.name + ")"
-  (@ctx, @state) ->
-    
+  (@ctx, @state) -> true
+            
 
 # Topology holding states within contexts
 #
@@ -44,10 +44,12 @@ export class Topology
   next: ->
     @states!reduce do
       (topology, state, ctx) ~>
+
+        console.log "CTX", ctx
         
         newStates = state ctx
         if newStates@@ isnt Array then newStates = Array newStates
-        
+
         reduce do
           newStates
           (topology, newState) ~>
@@ -101,8 +103,6 @@ export class CanvasCtx extends Ctx
 
     if ctx.s > 0.9 then ctx else void
 
-
-
 CheckLife = (ctx) ->
   if neighbours(ctx).length in [ 2, 3 ] then Life
   
@@ -114,8 +114,6 @@ Spiral = (ctx) -> return do
   ctx.set 'circle'
   ctx.transform r: 46, x: 1, s: (* 1.01), Spiral
 
-
-# 2D context
 SierpinskiA = (ctx) ->
   ctx.transform(r:60) do
     SierpinskiB
@@ -130,8 +128,20 @@ SierpinskiB = (ctx) ->
       SierpinskiB
       ctx.transform(r:-60) SierpinskiA
 
-ctx = new CanvasCtx s: 10, r: 0, x: 0, y:0
-console.log SierpinskiA ctx
+export class CanvasTopology extends Topology
+  (data) ->
+    if data then @ <<< data
+    if not @data then @data = new Map()
+
+  states: ->
+    return @data
+    
+  set: (...ctxStates) ->
+    new @constructor do
+      data: reduce ctxStates, ((data, ctxState) -> data.set(ctxState.ctx, ctxState.state)), @data
 
 
+seed = new CtxState new CanvasCtx(s: 10, r: 0, x: 0, y:0), SierpinskiA
+topo = new CanvasTopology!set seed
 
+console.log topo.next!
