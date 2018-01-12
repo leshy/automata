@@ -1,5 +1,5 @@
 require! {
-  immutable: { Map, Seq }: i
+  immutable: { Map, Seq, List, Set }: i
   util: { inspect }
   leshdash: {
     reduce, each, times, zip, defaults, mapFilter, assignInWith, flatten, map, keys,
@@ -30,6 +30,10 @@ export class CtxState
     if @ctx@@ not in [ Ctx, CanvasCtx ]
       console.log @ctx
       throw Error "wrong ctx type"
+      
+  next: ->
+    return @state(@ctx)
+    
             
 
 # Topology holding states within contexts
@@ -47,9 +51,9 @@ export class Topology
   
   next: ->
     @states!reduce do
-      (topology, state, ctx) ~>
-
-        newStates = state ctx
+      (topology, ctxState) ~>
+        newStates = ctxState.next!
+        
         if newStates@@ isnt Array then newStates = Array newStates
 
         reduce do
@@ -68,12 +72,11 @@ export class Topology
       (total, state, ctx) -> total <<< {"#{ctx}": state.inspect!}
       {}
 
-
 radianConstant = Math.PI / 180
 radians = (d) -> d * radianConstant
 
 export class CanvasCtx extends Ctx
-  (data={}) -> @ <<< { s: 1 } <<< data
+  (data={}) -> @ <<< {s: 1, r: 0, x: 0, y: 0} <<< data
   
   _applyVector: (v1, v2, angle, size=1) ->
     x = (v2.x or 0) * size
@@ -129,24 +132,25 @@ SierpinskiB = (ctx) ->
       SierpinskiB
       ctx.transform(r: -60) SierpinskiA
 
-export class CanvasTopology extends Topology
+export class BlindTopology extends Topology
   (data) ->
     if data then @ <<< data
-    if not @data then @data = new Map()
+    if not @data then @data = new List()
 
   inspect: ->
-    @states!map (el, ctx) -> new CtxState(ctx, el).inspect!
+    @states()
+    .map (.inspect!)
     .join('\n')
-
-  states: ->
-    return @data
+  
+  states: -> @data
     
-  set: (...ctxStates) ->
-    new @constructor do
-      data: reduce ctxStates, ((data, ctxState) -> data.set(ctxState.ctx, ctxState.state)), @data
+  set: (ctxState) ->
+    if ctxState@@ isnt CtxState then ctxState = new CtxState(new CanvasCtx(), ctxState)
+    new @constructor data: @data.push ctxState
 
 
-seed = new CtxState new CanvasCtx(s: 1, r: 0, x: 0, y:0), SierpinskiA
-topo = new CanvasTopology!set seed
+#seed = new CtxState new CanvasCtx(), SierpinskiA
+#console.log seed.next()
 
+topo = new BlindTopology!set SierpinskiA
 console.log topo.next!next!next!inspect!
