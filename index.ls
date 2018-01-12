@@ -25,7 +25,11 @@ export class Ctx
 # tuple holding a state within a context
 export class CtxState
   inspect: -> "CtxState(" + JSON.stringify(@ctx) + ", " + @state.name + ")"
-  (@ctx, @state) -> true
+  (@ctx, @state) ->
+    if @state@@ isnt Function then throw Error "wrong state type"
+    if @ctx@@ not in [ Ctx, CanvasCtx ]
+      console.log @ctx
+      throw Error "wrong ctx type"
             
 
 # Topology holding states within contexts
@@ -45,8 +49,6 @@ export class Topology
     @states!reduce do
       (topology, state, ctx) ~>
 
-        console.log "CTX", ctx
-        
         newStates = state ctx
         if newStates@@ isnt Array then newStates = Array newStates
 
@@ -65,7 +67,6 @@ export class Topology
     @states!reduce do
       (total, state, ctx) -> total <<< {"#{ctx}": state.inspect!}
       {}
-
 
 
 radianConstant = Math.PI / 180
@@ -101,8 +102,8 @@ export class CanvasCtx extends Ctx
       <<< @_applyVector(cvector, mvector, ctx.r, ctx.s)
       <<< normalizeRotation(ctx.r)
 
-    if ctx.s > 0.9 then ctx else void
-
+    ctx
+    
 CheckLife = (ctx) ->
   if neighbours(ctx).length in [ 2, 3 ] then Life
   
@@ -115,23 +116,27 @@ Spiral = (ctx) -> return do
   ctx.transform r: 46, x: 1, s: (* 1.01), Spiral
 
 SierpinskiA = (ctx) ->
-  ctx.transform(r:60) do
+  ctx.transform(r:60, x: 10) do
     SierpinskiB
     ctx.transform(r:60) do
       SierpinskiA
       ctx.transform(r:60) SierpinskiB
 
 SierpinskiB = (ctx) ->
-  ctx.transform(r:-60) do
+  ctx.transform(r: -60, x: 10) do
     SierpinskiA
-    ctx.transform(r:-60) do
+    ctx.transform(r: -60) do
       SierpinskiB
-      ctx.transform(r:-60) SierpinskiA
+      ctx.transform(r: -60) SierpinskiA
 
 export class CanvasTopology extends Topology
   (data) ->
     if data then @ <<< data
     if not @data then @data = new Map()
+
+  inspect: ->
+    @states!map (el, ctx) -> new CtxState(ctx, el).inspect!
+    .join('\n')
 
   states: ->
     return @data
@@ -141,7 +146,7 @@ export class CanvasTopology extends Topology
       data: reduce ctxStates, ((data, ctxState) -> data.set(ctxState.ctx, ctxState.state)), @data
 
 
-seed = new CtxState new CanvasCtx(s: 10, r: 0, x: 0, y:0), SierpinskiA
+seed = new CtxState new CanvasCtx(s: 1, r: 0, x: 0, y:0), SierpinskiA
 topo = new CanvasTopology!set seed
 
-console.log topo.next!
+console.log topo.next!next!next!inspect!
