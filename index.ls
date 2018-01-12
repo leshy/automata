@@ -7,10 +7,11 @@ require! {
   }: _
 }
 
-export class State
-  -> ...
-  
-
+# Context
+# 
+# defines some context (location) for a state within some topology
+# implements a transform function that takes wither a plain state or a state within some context (CtxState)
+# and returns a state within a new context (CtxState)
 export class Ctx
   applyTransform: (transformations={}) -> ...
   inspect: -> "Ctx(" + JSON.stringify({} <<< @) + ")"
@@ -21,13 +22,19 @@ export class Ctx
           | Function => [ @applyTransform(modifier), state ]
           | CtxState => [ state.ctx.applyTransform(modifier), state.state ]
           
+# tuple holding a state within a context
 export class CtxState
   inspect: -> "CtxState(" + JSON.stringify(@ctx) + ", " + @state.name + ")"
-  (@ctx, @state) -> true        
-          
-export class Space
-  contextClass: Ctx
-  
+  (@ctx, @state) ->
+    
+
+# Topology holding states within contexts
+#
+# knows how to iterate, immutable next()
+# 
+# should potentially implement perception for states,
+# and store states and contexts within an efficient data structure depending on perceptions implemented
+export class Topology
   get: (ctx) -> ...
   
   set: (ctxState) -> ...
@@ -36,19 +43,19 @@ export class Space
   
   next: ->
     @states!reduce do
-      (space, state, ctx) ~>
+      (topology, state, ctx) ~>
         
         newStates = state ctx
         if newStates@@ isnt Array then newStates = Array newStates
         
         reduce do
           newStates
-          (space, newState) ~>
-            space.set switch newState@@
+          (topology, newState) ~>
+            topology.set switch newState@@
               | Function => new CtxState ctx, newState
               | CtxState => newState
               | _ => throw "xxwat"
-          space
+          topology
             
       new @constructor!
 
@@ -95,27 +102,6 @@ export class CanvasCtx extends Ctx
     if ctx.s > 0.9 then ctx else void
 
 
-export class CanvasSpace
-#  contextClass: CanvasContext
-  (data) ->
-    if data then @ <<< data
-    if not @data then @data = new Map()
-
-  get: (ctx) ->
-    @data.get switch ctx?@@
-      | @contextClass => @data.get ctx.key()
-      | String => @data.get ctx
-      |_ => throw new Error "not a context"
-        
-  set: (ctx, ...states) ->
-    ctx = switch ctx?@@
-      | @contextClass => ctx.key()
-      | String => ctx
-      |_ => throw new Error "not a context"
-    
-    new @constructor do
-      data: reduce states, ((data, state) -> data.set loc, state), @data
-
 
 CheckLife = (ctx) ->
   if neighbours(ctx).length in [ 2, 3 ] then Life
@@ -146,4 +132,6 @@ SierpinskiB = (ctx) ->
 
 ctx = new CanvasCtx s: 10, r: 0, x: 0, y:0
 console.log SierpinskiA ctx
+
+
 

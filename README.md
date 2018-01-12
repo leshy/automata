@@ -9,5 +9,7 @@ should be able to simulate transformation rule based generation like L-systems, 
 or stuff that perceves, like CA, boids, etc.
 
 
-spaces are immutable objects, machines are functions returning other machines potentially with their location transformed
-views, storage and controllers as plugins
+spaces are immutable objects, machines are functions returning other machines potentially with their location transformed.
+
+
+views, storage and controllers are implemented as plugins
