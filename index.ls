@@ -2,7 +2,7 @@ require! {
   immutable: { Map, Seq, List, Set }: i
   util: { inspect }
   leshdash: {
-    reduce, each, times, zip, defaults, mapFilter, assignInWith, flatten, map, keys,
+    reduce, each, times, zip, defaults, mapFilter, assignInWith, flatten, map, keys, clone,
     { typeCast }: w
   }: _
 }
@@ -14,7 +14,7 @@ require! {
 # and returns a state within a new context (CtxState)
 export class Ctx
   applyTransform: (transformations={}) -> ...
-  inspect: -> "Ctx(" + JSON.stringify({} <<< @) + ")"
+  inspect: -> "Ctx(" + JSON.stringify(@data) + ")"
   transform: (modifier) ->
     (...states) ~>  
       map flatten(states), (state) ~>
@@ -22,25 +22,15 @@ export class Ctx
           | Function => [ @applyTransform(modifier), state ]
           | CtxState => [ state.ctx.applyTransform(modifier), state.state ]
 
+
 # tuple holding a state within a context
 export class CtxState
   inspect: -> "CtxState(" + JSON.stringify(@ctx) + ", " + @state.name + ")"
   (@ctx, @state) ->
     if @state@@ isnt Function then throw Error "wrong state type"
-      
   next: ->
     return @state(@ctx)
-    
-applyVector = (v1, v2, angle, size=1) ->
-  x = (v2.x or 0) * size
-  y = (v2.y or 0) * size
-  r = radians angle
-  x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
-  y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
-
-  { x: v1.x + x2, y: v1.y + y2 }
-    
-            
+        
 
 # Topology holding states within contexts
 #
@@ -82,19 +72,22 @@ radianConstant = Math.PI / 180
 radians = (d) -> d * radianConstant
 
 export class Ctx2D extends Ctx
-  (data={}) -> @ <<< {s: 1, r: 0, x: 0, y: 0} <<< data
+  (data={}) -> @data = {s: 1, r: 0, x: 0, y: 0} <<< data
   
   _applyVector: (v1, v2, angle, size=1) ->
+    r = radians angle
+    
     x = (v2.x or 0) * size
     y = (v2.y or 0) * size
-    r = radians angle
-    x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
-    y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
-
+    
+    x2 = Math.round((Math.cos(r) * x) - (Math.sin(r) * y))
+    y2 = Math.round((Math.sin(r) * x) + (Math.cos(r) * y))
+    
     { x: v1.x + x2, y: v1.y + y2 }
 
   applyTransform: (mod) ->
-    ctx = new @constructor @
+    ctx = clone @data
+    console.log "APPLYTRANSFORM", ctx, mod
     
     cvector = ctx{x, y}
     mvector = mod{x, y}
@@ -107,11 +100,13 @@ export class Ctx2D extends Ctx
       if mod@@ is Function then return mod target, ctx
       mod + target
 
+    
     assignInWith(ctx, mod, standardJoin)
       <<< @_applyVector(cvector, mvector, ctx.r, ctx.s)
-      <<< normalizeRotation(ctx.r + mod.r)
+      <<< normalizeRotation(ctx.r)
 
-    ctx
+    console.log "RES", ctx
+    new @constructor ctx
 
 export class CtxCanvas extends Ctx2D
   line: ->
@@ -128,14 +123,19 @@ Spiral = (ctx) -> return do
   ctx.set 'circle'
   ctx.transform r: 46, x: 1, s: (* 1.01), Spiral
 
-SierpinskiA = (ctx) ->
-  ctx.transform(s: (/3), r: 60, x: 1) do
+defineState = (def) ->
+  def.state = true
+  def
+
+SierpinskiA = defineState (ctx) ->
+  ctx.transform(r: 90, x: 1) (ctx) -> 
     SierpinskiA
-    ctx.transform(r: 60, x: 1) do
-      SierpinskiA
-      ctx.transform(r: 60, x: 1) do
+    ctx.transform(r: 0, x: 1) (ctx) -> 
+      SierpinskiB
+      ctx.transform(x: 1) (ctx) -> 
         SierpinskiA
 
+SierpinskiB = (ctx) -> true
 
 export class BlindTopology extends Topology
   (data) ->
@@ -148,15 +148,16 @@ export class BlindTopology extends Topology
     .join('\n')
   
   states: -> @data
-    
+  
   set: (ctxState) ->
     new @constructor data: @data.push ctxState
 
 topo = new BlindTopology!
-  .set new CtxState(new CtxCanvas(x: 50, y: 20, s: 10, r: 0), SierpinskiA)
+  .set new CtxState(new CtxCanvas(x: 0, y: 0, s: 10, r: 0), SierpinskiA)
   
-#  .next!
-  #.next!
+console.log topo.next!
+
+  # .next!
   # .next!
   # .next!
   # .next!
@@ -178,10 +179,11 @@ global.draw = ->
       { ctx, state } = ctxState
 
       scale = 20
+      add = 20
+      
       c.beginPath();
-      c.arc(ctx.x * scale, ctx.y * scale, ctx.s * 3, 0, 2*Math.PI);
+      c.arc((ctx.data.x + add) * scale, (ctx.data.y + add) * scale, ctx.data.s * 3, 0, 2*Math.PI);
       c.stroke();
-
 
       # ctx.x = ctx.x
       # ctx.y = ctx.y
