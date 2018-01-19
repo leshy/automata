@@ -8,8 +8,8 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha test/*.ls",
-    "devserver": "./node_modules/.bin/budo index.ls:bundle.js --live -- -t browserify-livescript",
-    "make": "./node_modules/.bin/browserify -dt browserify-livescript -o bundle.js index.ls"
+    "devserver": "./node_modules/.bin/budo clientside.ls:bundle.js --live -- -t browserify-livescript",
+    "make": "./node_modules/.bin/browserify -dt browserify-livescript -o bundle.js clientside.ls"
   },
   "keywords": [],
   "author": "lesh <lesh@sysphere.org> (http://lesh.sysphere.org)",
