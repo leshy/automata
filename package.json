@@ -16,6 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.1",
+    "colors": "^1.1.2",
     "leshdash": "git://github.com/leshy/leshdash.git"
   },
   "devDependencies": {

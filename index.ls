@@ -1,5 +1,6 @@
 require! {
   immutable: { Map, Seq, List, Set }: i
+  colors
   util: { inspect }
   leshdash: {
     reduce, each, times, zip, defaults, mapFilter, assignInWith, flatten, map, keys, clone,
@@ -14,20 +15,25 @@ require! {
 # and returns a state within a new context (CtxState)
 export class Ctx
   applyTransform: (transformations={}) -> ...
-  inspect: -> "Ctx(" + JSON.stringify(@data) + ")"
-  transform: (modifier) ->
-    (...states) ~>  
-      map flatten(states), (state) ~>
-        new CtxState ...switch state@@
-          | Function => [ @applyTransform(modifier), state ]
-          | CtxState => [ state.ctx.applyTransform(modifier), state.state ]
-
+  inspect: -> "Ctx(" + JSON.stringify(@data) + ")"  
+  transform: (modifier, cb) ->
+    states = cb newctx = @applyTransform(modifier)
+    
+    if states@@ isnt Array then states = [states]
+    
+    ret = map flatten(states), (state) ~>
+      switch state@@
+        | Function => new CtxState(newctx, state)
+        | CtxState => state
+        
+    ret
 
 # tuple holding a state within a context
 export class CtxState
-  inspect: -> "CtxState(" + JSON.stringify(@ctx) + ", " + @state.name + ")"
+  inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
   (@ctx, @state) ->
     if @state@@ isnt Function then throw Error "wrong state type"
+      
   next: ->
     return @state(@ctx)
         
@@ -58,7 +64,7 @@ export class Topology
             topology.set switch newState@@
               | Function => new CtxState ctx, newState
               | CtxState => newState
-              | _ => throw "xxwat"
+              | _ => throw "wat"
           topology
             
       new @constructor!
@@ -80,14 +86,15 @@ export class Ctx2D extends Ctx
     x = (v2.x or 0) * size
     y = (v2.y or 0) * size
     
-    x2 = Math.round((Math.cos(r) * x) - (Math.sin(r) * y))
-    y2 = Math.round((Math.sin(r) * x) + (Math.cos(r) * y))
+    x2 = ((Math.cos(r) * x) - (Math.sin(r) * y))
+    y2 = ((Math.sin(r) * x) + (Math.cos(r) * y))
     
-    { x: v1.x + x2, y: v1.y + y2 }
+    res = { x: v1.x + x2, y: v1.y + y2 }
+#    console.log "APPLYVECTOR",v1, v2, r, res
+    res
 
   applyTransform: (mod) ->
     ctx = clone @data
-    console.log "APPLYTRANSFORM", ctx, mod
     
     cvector = ctx{x, y}
     mvector = mod{x, y}
@@ -101,10 +108,11 @@ export class Ctx2D extends Ctx
       mod + target
     
     assignInWith(ctx, mod, standardJoin)
-      <<< @_applyVector(cvector, mvector, ctx.r, ctx.s)
       <<< normalizeRotation(ctx.r)
+      <<< @_applyVector(cvector, mvector, ctx.r, ctx.s)
+      
+#    console.log colors.red("transform"), @data, colors.green('->'), mod, colors.green('->'), ctx
 
-    console.log "RES", ctx
     new @constructor ctx
 
 export class CtxCanvas extends Ctx2D
@@ -126,15 +134,23 @@ defineState = (def) ->
   def.state = true
   def
 
-SierpinskiA = defineState (ctx) ->
-  ctx.transform(r: 60, x: 1, s: (/2) ) do
-    SierpinskiA
-    ctx.transform(r: 60, x: 1) do
+SierpinskiA = (ctx) ->
+  ctx.transform x: -1, (ctx) -> return
+    ctx.transform r: 60, x: 1, s: (/2), (ctx) -> return
       SierpinskiB
-      ctx.transform(r: 60, x: 1) do
+      ctx.transform r: -60, x: 1, (ctx) -> return
         SierpinskiA
+        ctx.transform r: -60, x: 1, (ctx) -> return
+          SierpinskiB
 
-SierpinskiB = (ctx) -> true
+SierpinskiB = (ctx) ->
+  ctx.transform x: -1, (ctx) -> return
+    ctx.transform r: -60, x: 1, s: (/2), (ctx) -> return
+      SierpinskiA
+      ctx.transform r: 60, x: 1, (ctx) -> return
+        SierpinskiB
+        ctx.transform r: 60, x: 1, (ctx) -> return
+          SierpinskiA
 
 export class BlindTopology extends Topology
   (data) ->
@@ -152,15 +168,12 @@ export class BlindTopology extends Topology
     new @constructor data: @data.push ctxState
 
 topo = new BlindTopology!
-  .set new CtxState(new CtxCanvas(x: 0, y: 0, s: 10, r: 0), SierpinskiA)
-  
-console.log topo.next!
+  .set new CtxState(new CtxCanvas(x: 0, y: 0, s: 10, r: 0), SierpinskiB)
 
   # .next!
   # .next!
   # .next!
-  # .next!
-  
+  # .next!  
 
 global.draw = ->
   global.c = c = document.getElementById('canvas').getContext('2d')
@@ -178,8 +191,8 @@ global.draw = ->
     x = (v2.x or 0) * size
     y = (v2.y or 0) * size
     
-    x2 = Math.round((Math.cos(r) * x) - (Math.sin(r) * y))
-    y2 = Math.round((Math.sin(r) * x) + (Math.cos(r) * y))
+    x2 = ((Math.cos(r) * x) - (Math.sin(r) * y))
+    y2 = ((Math.sin(r) * x) + (Math.cos(r) * y))
     
     { x: v1.x + x2, y: v1.y + y2 }
 
@@ -187,30 +200,37 @@ global.draw = ->
     rendering.states().map (ctxState) ->
       { ctx, state } = ctxState
 
-      scale = 20
-      add = 20
+      scale = 60
+      add = 11
       
-      c.beginPath();
-      c.arc((ctx.data.x + add) * scale, (ctx.data.y + add) * scale, ctx.data.s * 3, 0, 2*Math.PI);
-      c.stroke();
+      # c.beginPath();
+      # c.arc((ctx.data.x + add) * scale, (ctx.data.y + add) * scale, ctx.data.s * 3, 0, 2*Math.PI);
+      # c.stroke();
 
-
       c.beginPath();
+      
       c.moveTo((ctx.data.x + add) * scale, (ctx.data.y + add) * scale);
+      
       { x, y } = applyVector({x: 0, y: 0}, { x: -ctx.data.s, y: 0 }, ctx.data.r, 1)
+      
       c.lineTo((ctx.data.x + x + add) * scale, (ctx.data.y + y + add) * scale);
+      
       c.stroke();
 
       # c.beginPath();
       # c.arc(ctx.x * 10,ctx.y * 10, 5,0,2*Math.PI);
       # c.stroke();
   
-  render(rendering = topo)
-  console.log rendering
-  render(rendering = rendering.next!)
-  console.log rendering
-#  render(rendering = rendering.next!)
+  render(rendering = topo.next!.next!.next!.next!.next!.next!)
+#  render(rendering = topo)
 #  console.log rendering
+#  render(rendering = rendering.next!)
+  # console.log rendering
+  # render(rendering = rendering.next!)
+  # console.log rendering
+  # render(rendering = rendering.next!)
+  # console.log rendering
+  
   # render(rendering = rendering.next!)
   # render(rendering = rendering.next!)
   # render(rendering = rendering.next!)
