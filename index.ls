@@ -8,32 +8,30 @@ require! {
   }: _
 }
 
+
 # Context
 # 
 # defines some context (location) for a state within some topology
-# implements a transform function that takes wither a plain state or a state within some context (CtxState)
+# implements a transform function that takes either a plain state or a state within some context (CtxState)
 # and returns a state within a new context (CtxState)
 export class Ctx
   applyTransform: (transformations={}) -> ...
   inspect: -> "Ctx(" + JSON.stringify(@data) + ")"  
-  transform: (modifier, cb) ->
+  t: (modifier, cb) ->
     states = cb newctx = @applyTransform(modifier)
-    
     if states@@ isnt Array then states = [states]
-    
     ret = map flatten(states), (state) ~>
       switch state@@
         | Function => new CtxState(newctx, state)
         | CtxState => state
-        
     ret
+
 
 # tuple holding a state within a context
 export class CtxState
   inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
   (@ctx, @state) ->
     if @state@@ isnt Function then throw Error "wrong state type"
-      
   next: ->
     return @state(@ctx)
         
@@ -46,11 +44,8 @@ export class CtxState
 # and store states and contexts within an efficient data structure depending on perceptions implemented
 export class Topology
   get: (ctx) -> ...
-  
   set: (ctxState) -> ...
-  
   states: -> ...
-  
   next: ->
     @states!reduce do
       (topology, ctxState) ~>
@@ -64,9 +59,8 @@ export class Topology
             topology.set switch newState@@
               | Function => new CtxState ctx, newState
               | CtxState => newState
-              | _ => throw "wat"
+              | _ => throw "state returned an invalid object"
           topology
-            
       new @constructor!
 
   toObject: ->
@@ -90,7 +84,6 @@ export class Ctx2D extends Ctx
     y2 = ((Math.sin(r) * x) + (Math.cos(r) * y))
     
     res = { x: v1.x + x2, y: v1.y + y2 }
-#    console.log "APPLYVECTOR",v1, v2, r, res
     res
 
   applyTransform: (mod) ->
@@ -110,8 +103,6 @@ export class Ctx2D extends Ctx
     assignInWith(ctx, mod, standardJoin)
       <<< normalizeRotation(ctx.r)
       <<< @_applyVector(cvector, mvector, ctx.r, ctx.s)
-      
-#    console.log colors.red("transform"), @data, colors.green('->'), mod, colors.green('->'), ctx
 
     new @constructor ctx
 
@@ -130,33 +121,26 @@ Spiral = (ctx) -> return do
   ctx.set 'circle'
   ctx.transform r: 46, x: 1, s: (* 1.01), Spiral
 
-defineState = (def) ->
-  def.state = true
-  def
+Sierpinski = (ctx) ->
+  A = (ctx) ->
+    ctx.t x: -1, (ctx) ->
+      ctx.t r: -60 , x: 1, s: (/2), (ctx) -> return
+        B, ctx.t r: 60, x: 1, (ctx) -> return
+          A, ctx.t r: 60, x: 1, (ctx) -> B
 
-SierpinskiA = (ctx) ->
-  ctx.transform x: -1, (ctx) -> return
-    ctx.transform r: 60, x: 1, s: (/2), (ctx) -> return
-      SierpinskiB
-      ctx.transform r: -60, x: 1, (ctx) -> return
-        SierpinskiA
-        ctx.transform r: -60, x: 1, (ctx) -> return
-          SierpinskiB
+  B = (ctx) ->
+    ctx.t x: -1, (ctx) -> 
+      ctx.t r: 60, x: 1, s: (/2), (ctx) -> return
+        A, ctx.t r: -60, x: 1, (ctx) -> return
+          B, ctx.t r: -60, x: 1, (ctx) -> A
 
-SierpinskiB = (ctx) ->
-  ctx.transform x: -1, (ctx) -> return
-    ctx.transform r: -60, x: 1, s: (/2), (ctx) -> return
-      SierpinskiA
-      ctx.transform r: 60, x: 1, (ctx) -> return
-        SierpinskiB
-        ctx.transform r: 60, x: 1, (ctx) -> return
-          SierpinskiA
+  return A ctx
 
 export class BlindTopology extends Topology
   (data) ->
     if data then @ <<< data
     if not @data then @data = new List()
-
+      
   inspect: ->
     @states()
     .map (.inspect!)
@@ -167,22 +151,12 @@ export class BlindTopology extends Topology
   set: (ctxState) ->
     new @constructor data: @data.push ctxState
 
-topo = new BlindTopology!
-  .set new CtxState(new CtxCanvas(x: 0, y: 0, s: 10, r: 0), SierpinskiB)
-
-  # .next!
-  # .next!
-  # .next!
-  # .next!  
+topo = new BlindTopology().set new CtxState(new CtxCanvas(x: 0, y: 3.25, s: 10, r: 0), Sierpinski)
 
 global.draw = ->
   global.c = c = document.getElementById('canvas').getContext('2d')
   c.canvas.width  = window.innerWidth;
   c.canvas.height = window.innerHeight;
-  
-  #c.canvas.width  = document.body.clientWidth;
-  #c.canvas.height = document.body.clientHeight;
-
   
   c.strokeStyle = 'white';
   applyVector = (v1, v2, angle, size=1) ->
@@ -196,41 +170,36 @@ global.draw = ->
     
     { x: v1.x + x2, y: v1.y + y2 }
 
-  render = (rendering) -> 
+  clear = ->
+    c.clearRect(0, 0, c.canvas.width, c.canvas.height)
+
+  render = (rendering) ->
+    
+    #c.clearRect(0, 0, c.canvas.width, c.canvas.height)
     rendering.states().map (ctxState) ->
       { ctx, state } = ctxState
 
       scale = 60
-      add = 11
-      
+      addx = 11
+      addy = 9
+            
       # c.beginPath();
       # c.arc((ctx.data.x + add) * scale, (ctx.data.y + add) * scale, ctx.data.s * 3, 0, 2*Math.PI);
       # c.stroke();
 
       c.beginPath();
-      
-      c.moveTo((ctx.data.x + add) * scale, (ctx.data.y + add) * scale);
-      
+      c.moveTo((ctx.data.x + addx) * scale, (ctx.data.y + addy) * scale);
       { x, y } = applyVector({x: 0, y: 0}, { x: -ctx.data.s, y: 0 }, ctx.data.r, 1)
-      
-      c.lineTo((ctx.data.x + x + add) * scale, (ctx.data.y + y + add) * scale);
-      
+      c.lineTo((ctx.data.x + x + addx) * scale, (ctx.data.y + y + addy) * scale);
       c.stroke();
 
-      # c.beginPath();
-      # c.arc(ctx.x * 10,ctx.y * 10, 5,0,2*Math.PI);
-      # c.stroke();
+
+  rerender = (topo, cnt=1, delay=500) ->
+    if not cnt then return
+    else setTimeout((-> rerender(topo.next!, cnt-1, delay)), delay)
+    clear()
+    render(topo)
+
+  rerender(topo, 8, 100)
+
   
-  render(rendering = topo.next!.next!.next!.next!.next!.next!)
-#  render(rendering = topo)
-#  console.log rendering
-#  render(rendering = rendering.next!)
-  # console.log rendering
-  # render(rendering = rendering.next!)
-  # console.log rendering
-  # render(rendering = rendering.next!)
-  # console.log rendering
-  
-  # render(rendering = rendering.next!)
-  # render(rendering = rendering.next!)
-  # render(rendering = rendering.next!)

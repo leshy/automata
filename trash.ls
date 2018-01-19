@@ -1,4 +1,23 @@
 
+setInterval((->
+  rendering = topo
+  console.log Math.floor(global.vol / 10)
+  _.times -Math.floor(global.vol / 10), ->
+    rendering := rendering.next!
+  render(rendering)
+  ), 5)
+
+global.vol = 60
+getUserMedia = require('getusermedia')
+hark = require 'hark'
+getUserMedia (err, stream) ->
+  console.log err, stream
+  speech = hark stream, {}
+  speech.on 'volume_change', ->
+    global.vol = it
+
+
+
 export class CanvasSpace
 #  contextClass: CanvasContext
   (data) ->

@@ -17,6 +17,8 @@
   "dependencies": {
     "bluebird": "^3.5.1",
     "colors": "^1.1.2",
+    "getusermedia": "^2.0.1",
+    "hark": "^1.1.6",
     "leshdash": "git://github.com/leshy/leshdash.git"
   },
   "devDependencies": {
