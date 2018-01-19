@@ -99,7 +99,6 @@ export class Ctx2D extends Ctx
       if not mod? then return target
       if mod@@ is Function then return mod target, ctx
       mod + target
-
     
     assignInWith(ctx, mod, standardJoin)
       <<< @_applyVector(cvector, mvector, ctx.r, ctx.s)
@@ -128,11 +127,11 @@ defineState = (def) ->
   def
 
 SierpinskiA = defineState (ctx) ->
-  ctx.transform(r: 90, x: 1) (ctx) -> 
+  ctx.transform(r: 60, x: 1, s: (/2) ) do
     SierpinskiA
-    ctx.transform(r: 0, x: 1) (ctx) -> 
+    ctx.transform(r: 60, x: 1) do
       SierpinskiB
-      ctx.transform(x: 1) (ctx) -> 
+      ctx.transform(r: 60, x: 1) do
         SierpinskiA
 
 SierpinskiB = (ctx) -> true
@@ -173,6 +172,16 @@ global.draw = ->
 
   
   c.strokeStyle = 'white';
+  applyVector = (v1, v2, angle, size=1) ->
+    r = radians angle
+    
+    x = (v2.x or 0) * size
+    y = (v2.y or 0) * size
+    
+    x2 = Math.round((Math.cos(r) * x) - (Math.sin(r) * y))
+    y2 = Math.round((Math.sin(r) * x) + (Math.cos(r) * y))
+    
+    { x: v1.x + x2, y: v1.y + y2 }
 
   render = (rendering) -> 
     rendering.states().map (ctxState) ->
@@ -185,21 +194,17 @@ global.draw = ->
       c.arc((ctx.data.x + add) * scale, (ctx.data.y + add) * scale, ctx.data.s * 3, 0, 2*Math.PI);
       c.stroke();
 
-      # ctx.x = ctx.x
-      # ctx.y = ctx.y
-      # c.beginPath();
-      
-      # c.moveTo(ctx.x * scale, ctx.y * scale);
-      
-      # { x, y } = applyVector({ x: 0, y: 0}, { x: -ctx.s * 2, y: 0 }, ctx.r, 1)
-      
-      # c.lineTo((ctx.x + x) * scale, (ctx.y + y) * scale);
-      # c.stroke();
 
+      c.beginPath();
+      c.moveTo((ctx.data.x + add) * scale, (ctx.data.y + add) * scale);
+      { x, y } = applyVector({x: 0, y: 0}, { x: -ctx.data.s, y: 0 }, ctx.data.r, 1)
+      c.lineTo((ctx.data.x + x + add) * scale, (ctx.data.y + y + add) * scale);
+      c.stroke();
 
       # c.beginPath();
       # c.arc(ctx.x * 10,ctx.y * 10, 5,0,2*Math.PI);
       # c.stroke();
+  
   render(rendering = topo)
   console.log rendering
   render(rendering = rendering.next!)
