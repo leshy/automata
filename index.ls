@@ -15,6 +15,7 @@ require! {
 # implements a transform function that takes either a plain state or a state within some context (CtxState)
 # and returns a state within a new context (CtxState)
 export class Ctx
+  (data={}) -> @data = {s: 1, r: 0, x: 0, y: 0} <<< data
   applyTransform: (transformations={}) -> ...
   inspect: -> "Ctx(" + JSON.stringify(@data) + ")"  
   t: (modifier, cb) ->
@@ -69,8 +70,19 @@ export class Topology
       {}
 
 
+export class CtxNaive extends Ctx
+  applyTransform: (mod) ->
+    standardJoin = (target, mod, ctx) ~> 
+      if not mod? then return target
+      if mod@@ is Function then return mod target, @
+      if not target? then return mod
+      mod + target
+    ctx = clone(@data)
+    assignInWith(ctx, mod, standardJoin)
+    new @constructor ctx
+
+
 export class Ctx2D extends Ctx
-  (data={}) -> @data = {s: 1, r: 0, x: 0, y: 0} <<< data
   
   _move: (v1, v2, rotation, scale=1) ->
     radians = (d) -> d * Math.PI / 180
@@ -94,9 +106,9 @@ export class Ctx2D extends Ctx
     normalizeRotation = (angle) -> r: angle % 360
     
     standardJoin = (target, mod, ctx) ->
-      if not target? then return mod
       if not mod? then return target
       if mod@@ is Function then return mod target, ctx
+      if not target? then return mod
       mod + target
     
     assignInWith(ctx, mod, standardJoin)

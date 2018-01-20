@@ -21,19 +21,13 @@ export draw = -> getscene ({scene, camera, controls}) ->
         { ctx, state } = ctxState
         material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(#{ctx.data.cr}, #{ctx.data.cg}, #{ctx.data.cb})")
 
-        geometry = new THREE.Geometry()
-        point = new THREE.Vector3()
-        direction = new THREE.Vector3()
-
         scale = 1
-
-        geometry.vertices.push( new THREE.Vector3((ctx.data.x) * scale, (ctx.data.y) * scale, z))
-        { x, y } = move({x: (ctx.data.x), y: (ctx.data.y)}, { x: -ctx.data.s, y: 0 }, ctx.data.r, 1)
-        geometry.vertices.push( new THREE.Vector3(x * scale, y * scale, z))
-
-        object = new THREE.Line( geometry, material )
-        scene.add( object )
-
+        
+        cube = new THREE.Mesh( new THREE.BoxGeometry( ctx.data.size,ctx.data.size,ctx.data.size ), material );
+        cube.position.x = ctx.data.x
+        cube.position.y = ctx.data.y
+        cube.position.z = ctx.data.z
+        scene.add( cube )
         
     renderEvo: (topo, n=9, distance=10) ->   
       _.times n, (z) ->
