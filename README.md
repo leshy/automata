@@ -14,9 +14,9 @@ views, storage and controllers are implemented as plugins
 ![s3d](s3d.jpg)
 
 ## Stohastic L-systems
-### 2D
-![splash](splash.jpg)
 ### 3D
+![splash](splash.jpg)
+### 2D
 ![tree](tree.jpg)
 
 ## CA
