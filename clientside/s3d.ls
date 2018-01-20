@@ -1,10 +1,9 @@
 require! {
   './three/turtle.ls': turtle
-  '../models/sierpinski.ls': { topology }
+  '../models/tree.ls': { topology }
 }
 
 export draw = ->
   { render, renderEvo } = turtle.draw()
-  renderEvo(topology, 5)
-      
-  
+  renderEvo(topology, 23, 0.2)
+        

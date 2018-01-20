@@ -19,7 +19,7 @@ export getscene = (cb) ->
   scene.add( light );
 
   camera  = window.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100 );
-  camera.position.set( 0, 0, 7 );
+  camera.position.set( 0, 0, 20 );
 #  camera.lookAt(new THREE.Vector3( 0, 0, -1 ))
 
   controls = new OrbitControls( camera, renderer.domElement );

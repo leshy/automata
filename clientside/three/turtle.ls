@@ -35,9 +35,9 @@ export draw = -> getscene ({scene, camera, controls}) ->
         scene.add( object )
 
         
-    renderEvo: (topo, n=9) ->   
+    renderEvo: (topo, n=9, distance=10) ->   
       _.times n, (z) ->
-        ret.render(topo, z * 10)
+        ret.render(topo, z * distance)
         topo := topo.next!
 
     
