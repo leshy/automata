@@ -1,2 +1,2 @@
-global.draw = require('./three/turtle.ls').draw
+global.draw = require('./s3d.ls').draw
 

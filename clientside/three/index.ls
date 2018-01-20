@@ -31,7 +31,7 @@ export getscene = (cb) ->
 
   composer = false
 
-  if cb then cb({ scene, camera, controls })
+  ret = cb({ scene, camera, controls })
 
   shaders = -> 
     DotScreenShader = require('./shaders/DotScreenShader')
@@ -52,12 +52,12 @@ export getscene = (cb) ->
 #  shaders!
 
   render = ->
-    controls.update();
-    requestAnimationFrame( render );
-    renderer.render( scene, camera );
-
+    requestAnimationFrame render
+    controls.update()
+    renderer.render scene, camera
     if composer then composer.render();
 
   render!
+  return ret
 
 

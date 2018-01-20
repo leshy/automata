@@ -36,12 +36,12 @@ export class CtxState
     return @state(@ctx)
         
 
-# Topology holding states within contexts
+# Topology holding CtxStates
 #
 # knows how to iterate, immutable next()
 # 
 # should potentially implement perception for states,
-# and store states and contexts within an efficient data structure depending on perceptions implemented
+# store states and contexts within an efficient data structure depending on perceptions implemented
 export class Topology
   get: (ctx) -> ...
   set: (ctxState) -> ...
@@ -68,18 +68,17 @@ export class Topology
       (total, state, ctx) -> total <<< {"#{ctx}": state.inspect!}
       {}
 
+
 export class Ctx2D extends Ctx
   (data={}) -> @data = {s: 1, r: 0, x: 0, y: 0} <<< data
   
-  _applyVector: (v1, v2, angle, size=1) ->
-    
-    radianConstant = Math.PI / 180
-    radians = (d) -> d * radianConstant
+  _move: (v1, v2, rotation, scale=1) ->
+    radians = (d) -> d * Math.PI / 180
 
-    r = radians angle
+    r = radians rotation
     
-    x = (v2.x or 0) * size
-    y = (v2.y or 0) * size
+    x = (v2.x or 0) * scale
+    y = (v2.y or 0) * scale
     
     x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
     y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
@@ -102,7 +101,7 @@ export class Ctx2D extends Ctx
     
     assignInWith(ctx, mod, standardJoin)
       <<< normalizeRotation(ctx.r)
-      <<< @_applyVector(cvector, mvector, ctx.r, ctx.s)
+      <<< @_move(cvector, mvector, ctx.r, ctx.s)
 
     new @constructor ctx
 
