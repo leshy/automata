@@ -10,10 +10,10 @@ spaces are immutable objects, machines are functions returning other machines po
 
 views, storage and controllers are implemented as plugins
 
-## l-systems
+## deterministic l-systems
 ![s3d](s3d.jpg)
 
-## stohastic l-system
+## stohastic l-systems
 ![tree](tree.jpg)
 
 ## CA
