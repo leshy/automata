@@ -84,11 +84,11 @@ export class Ctx2D extends Ctx
     x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
     y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
     
-    res = { x: v1.x + x2, y: v1.y + y2 }
-    res
+    { x: v1.x + x2, y: v1.y + y2 }
 
   applyTransform: (mod) ->
     ctx = clone @data
+    
     cvector = ctx{x, y}
     mvector = mod{x, y}
     
@@ -124,30 +124,4 @@ export class BlindTopology extends Topology
 export class CtxCanvas extends Ctx2D
   line: ->
     true
-
-
-#   /\
-#  /__\
-# / \/ \
-# ------
-
-export Sierpinski = (ctx) ->
-  
-  A = (ctx) -> ctx.t x: -2, s: (/2),(ctx) ->
-      ctx.t r: -60 , x: 1, (ctx) -> return
-        B
-        ctx.t r: 60, x: 1, (ctx) -> return
-          A
-          ctx.t r: 60, x: 1, (ctx) -> return
-            B
-
-  B = (ctx) -> ctx.t x: -2, s: (/2), (ctx) ->
-      ctx.t r: 60, x: 1, (ctx) -> return
-        A
-        ctx.t r: -60, x: 1, (ctx) -> return
-          B
-          ctx.t r: -60, x: 1, (ctx) -> return
-            A
-            
-  A ctx
 

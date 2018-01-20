@@ -8,8 +8,8 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha test/*.ls",
-    "devserver": "./node_modules/.bin/budo clientside.ls:bundle.js --live -- -t browserify-livescript",
-    "make": "./node_modules/.bin/browserify -dt browserify-livescript -o bundle.js clientside.ls"
+    "devserver": "./node_modules/.bin/budo clientside/index.ls:bundle.js --live -- -t browserify-livescript",
+    "make": "./node_modules/.bin/browserify -dt browserify-livescript -o bundle.js clientside/index.ls"
   },
   "keywords": [],
   "author": "lesh <lesh@sysphere.org> (http://lesh.sysphere.org)",
@@ -19,7 +19,10 @@
     "colors": "^1.1.2",
     "getusermedia": "^2.0.1",
     "hark": "^1.1.6",
-    "leshdash": "git://github.com/leshy/leshdash.git"
+    "leshdash": "git://github.com/leshy/leshdash.git",
+    "three": "^0.89.0",
+    "three-effectcomposer": "0.0.1",
+    "three-orbit-controls": "^82.1.0"
   },
   "devDependencies": {
     "browserify": "^15.1.0",
