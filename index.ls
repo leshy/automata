@@ -70,6 +70,7 @@ export class Topology
       {}
 
 
+
 export class CtxNaive extends Ctx
   applyTransform: (mod) ->
     standardJoin = (target, mod, ctx) ~> 
@@ -80,6 +81,10 @@ export class CtxNaive extends Ctx
     ctx = clone(@data)
     assignInWith(ctx, mod, standardJoin)
     new @constructor ctx
+
+
+export class CtxNaiveCA extends CtxNaive
+  -> ...
 
 
 export class Ctx2D extends Ctx

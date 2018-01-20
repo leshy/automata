@@ -1,5 +1,5 @@
 require! {
-  leshdash: { random, sample }
+  leshdash: { random, sample, weighted }
   '../index.ls': { BlindTopology, CtxState, CtxNaive, Sierpinski }
 }
 
@@ -24,13 +24,10 @@ export Branch = (ctx) ->
     y: mover
     z: mover
 
-    ->
-      sample [
-        [ Branch, Branch ],
-        Branch,
-        Branch,
-        Branch,
-      ]
+    -> weighted do
+      [ 1, [ Branch, Branch ] ]
+      [ 4, Branch ]
+      
 
 export topology = new BlindTopology().set new CtxState(new CtxNaive(x: 0, y: 0, z:0, size: 1), Branch)
 
