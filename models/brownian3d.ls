@@ -1,5 +1,5 @@
 require! {
-  leshdash: { random, sample, weighted }
+  leshdash: { random, sample, weighted, linlin, linexp }
   '../index.ls': { BlindTopology, CtxState, CtxNaive, Sierpinski }
 }
 
@@ -8,10 +8,12 @@ rndc = (color) ->
   if newColor > 255 then newColor = 127
   newColor
 
-mover = (pos, ctx) -> pos + (random(-1-ctx.data.size, ctx.data.size + 1, true))
+mapper = linexp(2 ,0, 1, 0, 1)
+mover = (pos, ctx) -> pos + (random(-mapper(1 - ctx.data.size), mapper(1 - ctx.data.size), true))
 
 cmod = 30
 move = 0.75
+
 export Branch = (ctx) ->  
   ctx.t do
     cr: rndc
@@ -27,7 +29,6 @@ export Branch = (ctx) ->
     -> weighted do
       [ 1, [ Branch, Branch ] ]
       [ 4, Branch ]
-      
 
 export topology = new BlindTopology().set new CtxState(new CtxNaive(x: 0, y: 0, z:0, size: 1), Branch)
 

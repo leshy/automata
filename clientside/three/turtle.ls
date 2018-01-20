@@ -13,7 +13,7 @@ move = (v1, v2, rotation, size=1) ->
   y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
   { x: v1.x + x2, y: v1.y + y2 }
 
-export draw = -> getscene ({scene, camera, controls}) ->
+export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
 
   ret = do
     render: (topo, z=0) ->

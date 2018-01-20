@@ -6,7 +6,11 @@ require! {
 OrbitControls = require('three-orbit-controls')(THREE)
 EffectComposer = require('three-effectcomposer')(THREE)
 
-export getscene = (cb) ->
+export getscene = (distance, cb) ->
+  if not cb
+    cb = distance
+    distance = 20
+    
   renderer = new THREE.WebGLRenderer( antialias: true );
   renderer.setClearColor( 0x202020 );
   renderer.setSize( window.innerWidth, window.innerHeight );
@@ -19,7 +23,7 @@ export getscene = (cb) ->
   scene.add( light );
 
   camera  = window.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100 );
-  camera.position.set( 0, 0, 20 );
+  camera.position.set( 0, 0, distance );
 #  camera.lookAt(new THREE.Vector3( 0, 0, -1 ))
 
   controls = new OrbitControls( camera, renderer.domElement );

@@ -82,9 +82,10 @@ export class CtxNaive extends Ctx
     assignInWith(ctx, mod, standardJoin)
     new @constructor ctx
 
+  checkLoc: (mod) ->
+    true
 
-export class CtxNaiveCA extends CtxNaive
-  -> ...
+
 
 
 export class Ctx2D extends Ctx
