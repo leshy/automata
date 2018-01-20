@@ -14,4 +14,4 @@ spaces are immutable objects, machines are functions returning other machines po
 
 views, storage and controllers are implemented as plugins
 
-![s3d](s3d.png)
+![s3d](s3d.jpg)
