@@ -14,12 +14,13 @@ move = (v1, v2, rotation, size=1) ->
   { x: v1.x + x2, y: v1.y + y2 }
 
 export draw = -> getscene ({scene, camera, controls}) ->
-  material = new THREE.LineBasicMaterial color: 0xffffff
 
   ret = do
     render: (topo, z=0) ->
       topo.states().map (ctxState) ->
         { ctx, state } = ctxState
+        console.log ctx.data.cr, ctx.data.cb, ctx.data.cg
+        material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(#{ctx.data.cr}, #{ctx.data.cg}, #{ctx.data.cb})")
 
         geometry = new THREE.Geometry()
         point = new THREE.Vector3()
