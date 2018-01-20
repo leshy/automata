@@ -9,8 +9,7 @@ rndc = (color) ->
   newColor
 
 mover = (pos, ctx) -> pos + (random(-1-ctx.data.size, ctx.data.size + 1, true))
-  
-            
+
 cmod = 30
 move = 0.75
 export Branch = (ctx) ->  

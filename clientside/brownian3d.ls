@@ -1,6 +1,6 @@
 require! {
   './three/turtle3d.ls': turtle
-  '../models/tree3d.ls': { topology }
+  '../models/brownian3d.ls': { topology }
 }
 
 export draw = ->
