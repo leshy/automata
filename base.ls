@@ -25,11 +25,13 @@ export class Ctx
       if not target? then return mod
       mod + target
   
-  applyTransform: (transformations={}) -> ...
-  
+  applyTransform: (mod) ->
+    new @constructor @standardJoin(@data, mod)
+    
   inspect: -> "Ctx(" + JSON.stringify(@data) + ")"  
   t: (modifier, cb) ->
-    states = cb newctx = @applyTransform(modifier)
+    states = cb newctx = @applyTransform(modifier) <<< { topo: @topo }
+    console.log "STATES", states
     if states@@ isnt Array then states = [states]
     ret = map flatten(states), (state) ~>
       switch state@@
@@ -41,7 +43,7 @@ export class Ctx
 # tuple holding a state within a context
 export class CtxState
   inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
-  (@ctx, @state) ->
+  (@ctx, @state, @topology) ->
     if @state@@ isnt Function then throw Error "wrong state type"
   next: ->
     return @state(@ctx)
@@ -55,15 +57,24 @@ export class CtxState
 # store states and contexts within an efficient data structure depending on perceptions implemented
 export class Topology
   get: (ctx) -> ...
-  set: (ctxState) -> ...
+  
+  set: (ctxState) ->
+    if not ctxState.ctx.topo then ctxState.ctx.topo = @
+    @_set ctxState
+    
+  _set: (ctxState) -> ...
+  
   reduce: (cb) -> @data.reduce cb, new @constructor!
+  
   map: (cb) -> @data.map cb
+  
   next: ->
-    @reduce (topology, ctxState) ~>
-      newStates = ctxState.next!
+    console.log "TOPO NEXT", @
+    ret = @reduce (topology, ctxState) ~>
+      newStates = ctxState.next(@)
 
       if newStates@@ isnt Array then newStates = Array newStates
-
+      
       reduce do
         newStates
         (topology, newState) ~>
@@ -72,6 +83,11 @@ export class Topology
             | CtxState => newState
             | _ => throw "state returned an invalid object"
         topology
+        
+    console.log "NEXT", ret
+
+    ret
+      
 
   toObject: ->
     @reduce do

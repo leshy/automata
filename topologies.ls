@@ -18,7 +18,7 @@ export class NaiveTopology extends Topology
     .map (.inspect!)
     .join('\n')
   
-  set: (ctxState) ->
+  _set: (ctxState) ->
     new @constructor data: @data.push ctxState
 
 
@@ -31,7 +31,10 @@ export class DiscreteTopology extends Topology
     @states()
     .map (.inspect!)
     .join('\n')
-  
-  set: (ctxState) ->
+
+  get: (coords) ->
+    @data.get coords.join('-')
+    
+  _set: (ctxState) ->
     new @constructor data: @data.set ctxState.ctx.key(), ctxState
 

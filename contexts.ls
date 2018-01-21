@@ -3,7 +3,7 @@ require! {
   colors
   util: { inspect }
   leshdash: {
-    reduce, each, times, zip, defaults, mapFilter, assignWith, flatten, map, keys, clone,
+    reduce, each, times, zip, defaults, mapFilter, assignWith, flatten, map, keys, clone, omit,
     { typeCast }: w
   }: _
   
@@ -11,9 +11,6 @@ require! {
 }
 
 export class CtxNaive extends Ctx
-  applyTransform: (mod) ->
-    new @constructor @standardJoin(@data, mod)
-
 
 export class Ctx2D extends Ctx
   _move: (v1, v2, rotation, scale=1) ->
@@ -42,13 +39,40 @@ export class Ctx2D extends Ctx
       <<< @_move(cvector, mvector, ctx.r, ctx.s)
 
 
-export class CtxNaiveCoords
-    (data) -> @ <<< { loc: [] } <<< (data or {})
+export class CtxNaiveCoords extends Ctx
     key: -> @data.loc.join('-')
-    
+  
+    applyTransform: (mod) ->
+      new @constructor do
+        @standardJoin omit(@data, [ 'loc' ]), mod
+        <<< { loc: @coordinateTransform(@data.loc, mod.loc) }
+      
+    coordinateTransform: (target, mod) ->
+      if not mod then return target
+      map zip(target, mod), ([t, m]) -> t + m
+      
     look: (mod) ->
-      target = new @constructor @applyTransform { loc: mod }, { loc: @data.loc }
-      @topo.get(target)
+      @topo.get(@coordinateTransform @data.loc, mod)
+
+    neighCoords: -> return
+      [ 1, 1 ]
+      [ 1, 0 ]
+      [ 1, -1 ]
       
+      [ 0, 1 ]
+      [ 0, -1 ]
       
+      [ -1, 1 ]
+      [ -1, 0 ]
+      [ -1, -1 ]
+      
+    count: ->
+      console.log "CALLING COUNT", @
+      reduce do
+        @neighCoords()
+        (total, coords) ~>
+          console.log "LOOKING AT", total, coords
+          if @look(coords) then total + 1 else total
+        0
+          
 
