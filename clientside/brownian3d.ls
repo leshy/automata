@@ -5,4 +5,4 @@ require! {
 
 export draw = ->
   { render, renderEvo } = turtle.draw(10)
-  renderEvo topology, 30, 0
+  renderEvo topology, 20, 0

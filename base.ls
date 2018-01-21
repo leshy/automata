@@ -3,7 +3,7 @@ require! {
   colors
   util: { inspect }
   leshdash: {
-    reduce, each, times, zip, defaults, mapFilter, assignInWith, flatten, map, keys, clone,
+    reduce, each, times, zip, defaults, mapFilter, assignWith, flatten, map, keys, clone,
     { typeCast }: w
   }: _
 }
@@ -15,8 +15,18 @@ require! {
 # implements a transform function that takes either a plain state or a state within some context (CtxState)
 # and returns a state within a new context (CtxState)
 export class Ctx
-  (data={}) -> @data = {s: 1, r: 0, x: 0, y: 0} <<< data
+  (data={}) ->
+    if not @data then @data = data
+
+  standardJoin: (target, mod) ->
+    assignWith clone(target), mod, (target, mod, bla, blu) ~>
+      if not mod? then return target
+      if mod@@ is Function then return mod target, @
+      if not target? then return mod
+      mod + target
+  
   applyTransform: (transformations={}) -> ...
+  
   inspect: -> "Ctx(" + JSON.stringify(@data) + ")"  
   t: (modifier, cb) ->
     states = cb newctx = @applyTransform(modifier)

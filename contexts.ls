@@ -3,7 +3,7 @@ require! {
   colors
   util: { inspect }
   leshdash: {
-    reduce, each, times, zip, defaults, mapFilter, assignInWith, flatten, map, keys, clone,
+    reduce, each, times, zip, defaults, mapFilter, assignWith, flatten, map, keys, clone,
     { typeCast }: w
   }: _
   
@@ -11,19 +11,8 @@ require! {
 }
 
 export class CtxNaive extends Ctx
-
   applyTransform: (mod) ->
-    standardJoin = (target, mod, ctx) ~> 
-      if not mod? then return target
-      if mod@@ is Function then return mod target, @
-      if not target? then return mod
-      mod + target
-    ctx = clone(@data)
-    assignInWith(ctx, mod, standardJoin)
-    new @constructor ctx
-
-  checkLoc: (loc) ->    
-    true
+    new @constructor @standardJoin(@data, mod)
 
 
 export class Ctx2D extends Ctx
@@ -48,19 +37,19 @@ export class Ctx2D extends Ctx
     
     normalizeRotation = (angle) -> r: angle % 360
     
-    standardJoin = (target, mod, ctx) ->
-      if not mod? then return target
-      if mod@@ is Function then return mod target, ctx
-      if not target? then return mod
-      mod + target
-    
-    assignInWith(ctx, mod, standardJoin)
+    new @constructor @standardJoin(ctx, mod)    
       <<< normalizeRotation(ctx.r)
       <<< @_move(cvector, mvector, ctx.r, ctx.s)
 
-    new @constructor ctx
 
 
-export class CtxCoords
-  (data) -> @ <<< { vector: {} } <<< (data or {})
-  key: -> JSON.stringify(@data.vector)
+export class CtxNaiveCoords
+    (data) -> @ <<< { loc: [] } <<< (data or {})
+    key: -> @data.loc.join('-')
+    
+    look: (mod) ->
+      target = new @constructor @applyTransform { loc: mod }, { loc: @data.loc }
+      @topo.get(target)
+      
+      
+
