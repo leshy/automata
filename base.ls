@@ -46,26 +46,25 @@ export class CtxState
 export class Topology
   get: (ctx) -> ...
   set: (ctxState) -> ...
-  states: -> ...
+  reduce: (cb) -> @data.reduce cb, new @constructor!
+  map: (cb) -> @data.map cb
   next: ->
-    @states!reduce do
-      (topology, ctxState) ~>
-        newStates = ctxState.next!
-        
-        if newStates@@ isnt Array then newStates = Array newStates
+    @reduce (topology, ctxState) ~>
+      newStates = ctxState.next!
 
-        reduce do
-          newStates
-          (topology, newState) ~>
-            topology.set switch newState@@
-              | Function => new CtxState ctx, newState
-              | CtxState => newState
-              | _ => throw "state returned an invalid object"
-          topology
-      new @constructor!
+      if newStates@@ isnt Array then newStates = Array newStates
+
+      reduce do
+        newStates
+        (topology, newState) ~>
+          topology.set switch newState@@
+            | Function => new CtxState ctx, newState
+            | CtxState => newState
+            | _ => throw "state returned an invalid object"
+        topology
 
   toObject: ->
-    @states!reduce do
+    @reduce do
       (total, state, ctx) -> total <<< {"#{ctx}": state.inspect!}
       {}
 

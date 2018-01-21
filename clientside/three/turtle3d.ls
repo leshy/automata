@@ -17,7 +17,7 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
   
   ret = do
     render: (topo, z=0) ->
-      topo.states().map (ctxState) ->
+      topo.map (ctxState) ->
         { ctx, state } = ctxState
         material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(#{ctx.data.cr}, #{ctx.data.cg}, #{ctx.data.cb})")
 

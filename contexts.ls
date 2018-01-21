@@ -6,9 +6,7 @@ require! {
     reduce, each, times, zip, defaults, mapFilter, assignInWith, flatten, map, keys, clone,
     { typeCast }: w
   }: _
-}
-
-require! {
+  
   './base.ls': { Ctx }
 }
 
@@ -29,7 +27,6 @@ export class CtxNaive extends Ctx
 
 
 export class Ctx2D extends Ctx
-  
   _move: (v1, v2, rotation, scale=1) ->
     radians = (d) -> d * Math.PI / 180
 
@@ -63,7 +60,7 @@ export class Ctx2D extends Ctx
 
     new @constructor ctx
 
-export class CtxCanvas extends Ctx2D
-  line: ->
-    true
 
+export class CtxCoords
+  (data) -> @ <<< { vector: {} } <<< (data or {})
+  key: -> JSON.stringify(@data.vector)

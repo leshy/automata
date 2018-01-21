@@ -1,6 +1,6 @@
 require! {
   leshdash: { random, sample, weighted, linlin, linexp }
-  '../index.ls': { BlindTopology, CtxState, CtxNaive, Sierpinski }
+  '../index.ls': { NaiveTopology, CtxState, CtxNaive }
 }
 
 rndc = (color) ->
@@ -58,5 +58,5 @@ export Branch = (ctx) ->
       [ 1, [ Branch, Branch ] ]
       [ 4, Branch ]
 
-export topology = new BlindTopology().set new CtxState(new CtxNaive(x: 0, y: 0, z:0, size: 1), Start)
+export topology = new NaiveTopology().set new CtxState(new CtxNaive(x: 0, y: 0, z:0, size: 1), Start)
 
