@@ -42,7 +42,6 @@ export class Ctx2D extends Ctx
       <<< @_move(cvector, mvector, ctx.r, ctx.s)
 
 
-
 export class CtxNaiveCoords
     (data) -> @ <<< { loc: [] } <<< (data or {})
     key: -> @data.loc.join('-')

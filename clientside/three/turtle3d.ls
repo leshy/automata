@@ -29,10 +29,16 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
         cube.position.z = ctx.data.z
         scene.add( cube )
         
-    renderEvo: (topo, n=9, distance=10) ->   
-      _.times n, (z) ->
-        ret.render(topo, z * distance)
-        topo := topo.next!
+    renderEvo: (topo, n=9, distance=10) ->
+      # _.times n, (z) ->
+      #   ret.render(topo, z * distance)
+      #   topo := topo.next!
+      #
+      if not n then return
+
+      topo = topo.next!
+      ret.render(topo, n * distance)
+      setTimeout((-> ret.renderEvo(topo, n-1,distance)), 20)
 
     
   return ret

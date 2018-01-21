@@ -9,9 +9,10 @@ rndc = (color) ->
   if newColor < 0 then newColor = 0
   newColor
 
-mapper = linexp(2 ,0, 1, 0, 7)
+mapper = linexp(4 ,0, 1, 0, 7)
 #mapper = linlin(0, 1, 0, 6)
-mover = (pos, ctx) -> pos + (random(-mapper(1 - ctx.data.size), mapper(1 - ctx.data.size), true) + 0.6)
+mover = (pos, ctx) ->
+  pos + (random(-mapper(1 - ctx.data.size), mapper(1 - ctx.data.size), true))
 
 cmod = 30
 move = 0.75
@@ -48,7 +49,8 @@ export Branch = (ctx) ->
     cg: rndc
     cb: rndc
     
-    size: (*0.9)
+    size: (* 0.9)
+    
     x: mover
     y: mover
     z: mover
