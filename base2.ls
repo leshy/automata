@@ -31,7 +31,8 @@ export class CtxView
     
     newView = new @constructor(transformed = @applyTransform(modifier), @topo, @newTopo)
 
-#    console.log @ctx, "via", modifier, 'is', transformed
+#    console.log @ctx, "via", modifier, 'becomes', transformed
+ 
     newStates = cb newView
     if not newStates then return []
     if newStates@@ isnt Array then newStates = [newStates]
