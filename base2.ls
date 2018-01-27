@@ -1,22 +1,11 @@
-require! {
-  immutable: { Map, Seq, List, Set }: i
-  colors
-  util: { inspect }
-  leshdash: {
-    reduce, each, times, zip, defaults, mapFilter, assignWith, flattenDeep, map, keys, clone, filter, identity,
-    { typeCast }: w
-  }: _
-}
-
 
 # Context View
 # 
 # defines some context (location) for a state within some topology
 # implements a transform function that takes either a plain state or a state within some context (CtxState)
 # and returns a state within a new context (CtxState)
-export class Ctx
-  (data={} ) ->
-    if not @data then @data = data
+export class CtxView
+  (@ctx, @topo, @newTopo) -> true
 
   standardJoin: (target, mod) ->
     assignWith clone(target), mod, (target, mod) ~>
@@ -35,14 +24,13 @@ export class Ctx
     if not states then return []
     if states@@ isnt Array then states = [states]
 
-    ret = map states, (state) ~>
+    map states, (state) ~>
       switch state@@
         | Function => new CtxState(newctx, state)
         | CtxState => state
-    ret
 
 
-# tuple holding a state within a context
+# tuple holding a state within a context, knows how to .next(), returns array of ctxStates
 export class CtxState
   (@ctx, @state) ->
     if @state@@ isnt Function then throw Error "wrong state type"
@@ -50,14 +38,8 @@ export class CtxState
   inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
   
   next: (topology, newTopology) ->
-    nextStates = filter (flattenDeep @state(@ctx) or []), identity
-    console.log "NextStates for", @ctx.data.loc, @state.name, "are", nextStates
-    
-    return map nextStates, (state) ~> 
-      switch state@@
-        | Function => new CtxState(@ctx, state)
-        | CtxState => state
-        
+    @state new @topology.CtxView(@ctx, topology, newTopology)
+
 
 # Topology holding CtxStates
 #
@@ -66,11 +48,16 @@ export class CtxState
 # should potentially implement perception for states,
 # store states and contexts within an efficient data structure depending on perceptions implemented
 export class Topology
+  CtxView = CtxView
+  
   get: (ctx) -> ...
   
-  set: (ctxState) ->
-    @_set ctxState
-    
+  set: (...ctxStates) ->
+    reduce do
+      ctxStates
+      (topology, ctxState) ~> topology._set ctxState
+      @
+
   _set: (ctxState) -> ...
   
   reduce: (cb) -> @data.reduce cb, new @constructor()
@@ -79,16 +66,8 @@ export class Topology
   
   next: ->
     @reduce (topology, ctxState) ~>
-      newStates = ctxState.next @, topology
+      @set newStates = ctxState.next @, topology
       
-      if newStates@@ isnt Array then newStates = Array newStates
-      
-      reduce do
-        newStates
-        (topology, newState) ~>
-          if newState then topology.set(newState) else topology
-        topology
-
   toObject: ->
     @reduce do
       (total, state, ctx) -> total <<< {"#{ctx}": state.inspect!}
