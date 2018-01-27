@@ -1,18 +1,46 @@
 require! {
-  leshdash: { random, sample, weighted, linlin, linexp, map }
+  leshdash: { random, sample, weighted, linlin, linexp, map, flatten, reduce }
   '../index.ls': { DiscreteTopology, CtxState, CtxNaiveCoords }
 }
 
 export On = (ctx) ->
-  if ctx.count() not in [ 2, 3 ]:
-    map ctx.neighCoords(), (coords) ->
-      ctx.t vector: coords, Check
+#  console.log "ON COUNT", ctx.count(On)
+  if ctx.count(On) in [ 2, 3 ]:
+    ctx.t {}, (ctx) -> On
+  else
+    flatten map ctx.neighCoords(), (coords) ->
+      ctx.t loc: (-> coords), visible: -1, (ctx) -> Check
       
 export Check = (ctx) ->
-  if ctx.count() is 3 then return
-    On,
-    map ctx.neighCoords(), (coords) ->
-      ctx.t vector: coords, Check
+  ctx.t { visible: 1 }, (ctx) ->
+    console.log ctx.data.loc, ctx.count(On)
+    if ctx.count(On) == 3
+      return [
+        On,
+        map ctx.neighCoords(), (coords) ->
+          if not ctx.look(coords) then ctx.t loc: (-> coords), visible: -1, (ctx) -> Check
+      ]
 
-export topology = new DiscreteTopology().set new CtxState(new CtxNaiveCoords(loc: [0, 0]), On)
 
+setPoint = (topology, loc) ->
+  ctx = new CtxNaiveCoords(visible: 1, loc: loc)
+  topology = topology.set new CtxState(ctx, On)
+  
+  reduce do
+    ctx.neighCoords()
+    (topo, loc) ->
+      if ctx.look(loc) then topo
+      else
+        topo.set new CtxState(new CtxNaiveCoords(visible: 0, loc: loc), Check)
+      
+    topology
+
+  
+topology = new DiscreteTopology()
+topology = setPoint(topology, [2, 1])
+topology = setPoint(topology, [1, 0])
+topology = setPoint(topology, [0, 0])
+topology = setPoint(topology, [0, 1])
+topology = setPoint(topology, [0, 2])
+
+export topology

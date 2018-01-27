@@ -1,9 +1,9 @@
 require! {
   './three/discrete2d.ls': discrete
-  '../models/gol.ls': { topology }
+  '../models/golsketch.ls': { topology }
 }
 
 
 export draw = ->
   { render, renderEvo } = discrete.draw(20)
-  renderEvo topology, 2, 0
+  renderEvo topology, 2, 3

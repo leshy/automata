@@ -11,10 +11,16 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
     render: (topo, z=0) ->
       topo.map (ctxState) ->
         { ctx, state } = ctxState
-        material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(#{ctx.data.cr}, #{ctx.data.cg}, #{ctx.data.cb})")
 
         scale = 1
-        
+
+        material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(#{ctx.data.cr or 255}, #{ctx.data.cg or 255}, #{ctx.data.cb or 255})")
+
+        if state.name == "Check"
+          material.transparent = true;
+          material.opacity = 0.3;
+          
+          
         cube = new THREE.Mesh( new THREE.BoxGeometry(1,1,1), material );
         cube.position.x = ctx.data.loc[0]
         cube.position.y = ctx.data.loc[1]
@@ -23,6 +29,7 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
         
     renderEvo: (topo, n=9, distance=10) ->
       _.times n, (z) ->
+        console.log "---------------------------------------------"
         ret.render(topo, z * distance)
         topo := topo.next!
       

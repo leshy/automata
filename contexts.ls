@@ -43,36 +43,42 @@ export class CtxNaiveCoords extends Ctx
     key: -> @data.loc.join('-')
   
     applyTransform: (mod) ->
-      new @constructor do
-        @standardJoin omit(@data, [ 'loc' ]), mod
-        <<< { loc: @coordinateTransform(@data.loc, mod.loc) }
+      data = @standardJoin omit(@data, [ 'loc' ]), mod
+      <<< { loc: @coordinateTransform(mod.loc) }
+        
+      new @constructor data, @topo
       
-    coordinateTransform: (target, mod) ->
+    coordinateTransform: (mod) ->
+      target = @data.loc
       if not mod then return target
-      map zip(target, mod), ([t, m]) -> t + m
+      if mod@@ is Function then mod(target)
+      else map zip(target, mod), ([t, m]) -> t + m
       
-    look: (mod) ->
-      @topo.get(@coordinateTransform @data.loc, mod)
+    look: (loc, state, verbose=false) ->
+      if verbose
+        console.log "CHECKING", @coordinateTransform(loc), @topo.get(@coordinateTransform(loc))?state?name
+        
+      lookState = @topo.get @coordinateTransform(loc)
+      if not state then return lookState
+      else lookState?state is state
+    
+    neighCoords: ->
+      return [
+        [ 1, 1 ]
+        [ 1, 0 ]
+        [ 1, -1 ]
 
-    neighCoords: -> return
-      [ 1, 1 ]
-      [ 1, 0 ]
-      [ 1, -1 ]
+        [ 0, 1 ]
+        [ 0, -1 ]
+
+        [ -1, 1 ]
+        [ -1, 0 ]
+        [ -1, -1 ] ]
       
-      [ 0, 1 ]
-      [ 0, -1 ]
-      
-      [ -1, 1 ]
-      [ -1, 0 ]
-      [ -1, -1 ]
-      
-    count: ->
-      console.log "CALLING COUNT", @
+    count: (state, verbose=false) ->
       reduce do
         @neighCoords()
         (total, coords) ~>
-          console.log "LOOKING AT", total, coords
-          if @look(coords) then total + 1 else total
+          if @look(coords, state, verbose) then total + 1 else total
         0
-          
 

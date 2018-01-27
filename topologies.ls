@@ -33,8 +33,11 @@ export class DiscreteTopology extends Topology
     .join('\n')
 
   get: (coords) ->
+    console.log @data, coords.join('-')
     @data.get coords.join('-')
     
   _set: (ctxState) ->
+    console.log "SET", ctxState, ctxState.ctx.key(), ctxState.state.name
+
     new @constructor data: @data.set ctxState.ctx.key(), ctxState
 

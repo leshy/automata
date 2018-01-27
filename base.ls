@@ -3,7 +3,7 @@ require! {
   colors
   util: { inspect }
   leshdash: {
-    reduce, each, times, zip, defaults, mapFilter, assignWith, flatten, map, keys, clone,
+    reduce, each, times, zip, defaults, mapFilter, assignWith, flattenDeep, map, keys, clone, filter, identity,
     { typeCast }: w
   }: _
 }
@@ -19,21 +19,23 @@ export class Ctx
     if not @data then @data = data
 
   standardJoin: (target, mod) ->
-    assignWith clone(target), mod, (target, mod, bla, blu) ~>
+    assignWith clone(target), mod, (target, mod) ~>
       if not mod? then return target
       if mod@@ is Function then return mod target, @
       if not target? then return mod
       mod + target
   
   applyTransform: (mod) ->
-    new @constructor @standardJoin(@data, mod)
+    new @constructor @standardJoin(@data, mod), @topo
     
-  inspect: -> "Ctx(" + JSON.stringify(@data) + ")"  
+  inspect: -> "Ctx(" + JSON.stringify(@data) + ")"
+  
   t: (modifier, cb) ->
-    states = cb newctx = @applyTransform(modifier) <<< { topo: @topo }
-    console.log "STATES", states
+    states = cb newctx = @applyTransform(modifier)
+    if not states then return []
     if states@@ isnt Array then states = [states]
-    ret = map flatten(states), (state) ~>
+
+    ret = map states, (state) ~>
       switch state@@
         | Function => new CtxState(newctx, state)
         | CtxState => state
@@ -42,11 +44,19 @@ export class Ctx
 
 # tuple holding a state within a context
 export class CtxState
-  inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
-  (@ctx, @state, @topology) ->
+  (@ctx, @state) ->
     if @state@@ isnt Function then throw Error "wrong state type"
-  next: ->
-    return @state(@ctx)
+      
+  inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
+  
+  next: (topology, newTopology) ->
+    nextStates = filter (flattenDeep @state(@ctx) or []), identity
+    console.log "NextStates for", @ctx.data.loc, @state.name, "are", nextStates
+    
+    return map nextStates, (state) ~> 
+      switch state@@
+        | Function => new CtxState(@ctx, state)
+        | CtxState => state
         
 
 # Topology holding CtxStates
@@ -59,35 +69,25 @@ export class Topology
   get: (ctx) -> ...
   
   set: (ctxState) ->
-    if not ctxState.ctx.topo then ctxState.ctx.topo = @
     @_set ctxState
     
   _set: (ctxState) -> ...
   
-  reduce: (cb) -> @data.reduce cb, new @constructor!
+  reduce: (cb) -> @data.reduce cb, new @constructor()
   
   map: (cb) -> @data.map cb
   
   next: ->
-    console.log "TOPO NEXT", @
-    ret = @reduce (topology, ctxState) ~>
-      newStates = ctxState.next(@)
-
+    @reduce (topology, ctxState) ~>
+      newStates = ctxState.next @, topology
+      
       if newStates@@ isnt Array then newStates = Array newStates
       
       reduce do
         newStates
         (topology, newState) ~>
-          topology.set switch newState@@
-            | Function => new CtxState ctx, newState
-            | CtxState => newState
-            | _ => throw "state returned an invalid object"
+          if newState then topology.set(newState) else topology
         topology
-        
-    console.log "NEXT", ret
-
-    ret
-      
 
   toObject: ->
     @reduce do
