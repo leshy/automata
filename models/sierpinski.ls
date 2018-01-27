@@ -1,5 +1,7 @@
 require! {
-  '../index.ls': { BlindTopology, CtxState, CtxCanvas, Sierpinski }
+  '../base.ls': { CtxState }
+  '../topologies.ls': { NaiveTopology }
+  '../contexts.ls': { Ctx2D }
 }
 
 #   /\
@@ -28,4 +30,4 @@ export Sierpinski = (ctx) ->
   A ctx
 
 
-export topology = new BlindTopology().set new CtxState(new CtxCanvas(x: 0, y: 3.25, s: 10, r: 0), Sierpinski)
+export topology = new NaiveTopology().set new CtxState(x: 0, y: 3.25, s: 10, r: 0, Sierpinski)

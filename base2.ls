@@ -73,7 +73,6 @@ export class Topology
 
   _set: (ctxState) -> ...
   
-  
   map: (cb) -> @data.map cb
   
   next: ->
@@ -100,3 +99,6 @@ export class NaiveTopology extends Topology
   rawReduce: (seed, cb) -> @data.reduce cb, seed
   
   _set: (ctxState) -> new @constructor data: @data.push ctxState
+
+
+

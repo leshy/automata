@@ -17,18 +17,17 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
 
   ret = do
     render: (topo, z=0) ->
-      topo.states().map (ctxState) ->
+      topo.data.map (ctxState) ->
         { ctx, state } = ctxState
-        material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(#{ctx.data.cr}, #{ctx.data.cg}, #{ctx.data.cb})")
+        material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(#{ctx.cr or 255}, #{ctx.cg or 255}, #{ctx.cb or 255})")
 
         geometry = new THREE.Geometry()
         point = new THREE.Vector3()
         direction = new THREE.Vector3()
 
         scale = 1
-
-        geometry.vertices.push( new THREE.Vector3((ctx.data.x) * scale, (ctx.data.y) * scale, z))
-        { x, y } = move({x: (ctx.data.x), y: (ctx.data.y)}, { x: -ctx.data.s, y: 0 }, ctx.data.r, 1)
+        { x, y } = move({x: (ctx.x), y: (ctx.y)}, { x: -ctx.s, y: 0 }, ctx.r, 1)
+#        console.log (ctx.x) * scale, (ctx.y) * scale, z, x * scale, y * scale, z
         geometry.vertices.push( new THREE.Vector3(x * scale, y * scale, z))
 
         object = new THREE.Line( geometry, material )

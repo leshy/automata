@@ -3,7 +3,6 @@ require! {
   '../models/brownian3d.ls': { topology }
 }
 
-
 export draw = ->
   { render, renderEvo } = turtle.draw(20)
-  renderEvo topology, 28, 0
+  renderEvo topology, 25, 0

@@ -3,7 +3,7 @@ require! {
   colors
   util: { inspect }
   leshdash: {
-    reduce, each, times, zip, defaults, mapFilter, assignWith, flattenDeep, map, keys, clone, filter, identity,
+    reduce, each, times, zip, defaults, mapFilter, assignWith, flattenDeep, map, keys, clone, filter, identity, push,
     { typeCast }: w
   }: _
 }
@@ -15,49 +15,46 @@ require! {
 # implements a transform function that takes either a plain state or a state within some context (CtxState)
 # and returns a state within a new context (CtxState)
 export class Ctx
-  (data={} ) ->
-    if not @data then @data = data
+  (@ctx, @topo, @newTopo) -> true
 
   standardJoin: (target, mod) ->
     assignWith clone(target), mod, (target, mod) ~>
+#      console.log "join", target, "mod", mod
       if not mod? then return target
       if mod@@ is Function then return mod target, @
       if not target? then return mod
       mod + target
   
-  applyTransform: (mod) ->
-    new @constructor @standardJoin(@data, mod), @topo
+  applyTransform: (mod) -> @standardJoin @ctx, mod
     
-  inspect: -> "Ctx(" + JSON.stringify(@data) + ")"
+  inspect: -> colors.red("Ctx(") + JSON.stringify(@ctx) + colors.red(")")
   
   t: (modifier, cb) ->
-    states = cb newctx = @applyTransform(modifier)
-    if not states then return []
-    if states@@ isnt Array then states = [states]
-
-    ret = map states, (state) ~>
-      switch state@@
-        | Function => new CtxState(newctx, state)
-        | CtxState => state
-    ret
-
-
-# tuple holding a state within a context
-export class CtxState
-  (@ctx, @state) ->
-    if @state@@ isnt Function then throw Error "wrong state type"
-      
-  inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
-  
-  next: (topology, newTopology) ->
-    nextStates = filter (flattenDeep @state(@ctx) or []), identity
-    console.log "NextStates for", @ctx.data.loc, @state.name, "are", nextStates
     
-    return map nextStates, (state) ~> 
-      switch state@@
-        | Function => new CtxState(@ctx, state)
-        | CtxState => state
-        
+    newView = new @constructor(transformed = @applyTransform(modifier), @topo, @newTopo)
+
+#    console.log @ctx, "via", modifier, 'becomes', transformed
+ 
+    newStates = cb newView
+    if not newStates then return []
+    if newStates@@ isnt Array then newStates = [newStates]
+
+    map newStates, (newState) ~>
+      switch newState@@
+        | Function => new CtxState(newView.ctx, newState)
+        |_ => newState
+
+
+# tuple holding a state within a context, knows how to .next(), returns array of ctxStates
+export class CtxState
+  (@ctx, @state) -> true
+  inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
+  next: (topology, newTopology) ->
+    flattenDeep @state new topology.Ctx @ctx, topology, newTopology
+    
+  toObject: ->
+    [ @ctx, @state.name ]
+    
 
 # Topology holding CtxStates
 #
@@ -66,32 +63,28 @@ export class CtxState
 # should potentially implement perception for states,
 # store states and contexts within an efficient data structure depending on perceptions implemented
 export class Topology
+  Ctx: Ctx
+  
   get: (ctx) -> ...
   
-  set: (ctxState) ->
-    @_set ctxState
-    
+  set: (...ctxStates) ->
+    reduce do
+      ctxStates
+      (topology, ctxState) ~> topology._set ctxState
+      @
+
   _set: (ctxState) -> ...
-  
-  reduce: (cb) -> @data.reduce cb, new @constructor()
   
   map: (cb) -> @data.map cb
   
   next: ->
-    @reduce (topology, ctxState) ~>
-      newStates = ctxState.next @, topology
+    @reduce (newTopology, ctxState) ~>
+      nextStates = ctxState.next @, newTopology
+#      console.log ctxState.inspect! +  " -->", nextStates
+      newTopology.set ...nextStates
       
-      if newStates@@ isnt Array then newStates = Array newStates
-      
-      reduce do
-        newStates
-        (topology, newState) ~>
-          if newState then topology.set(newState) else topology
-        topology
-
   toObject: ->
-    @reduce do
-      (total, state, ctx) -> total <<< {"#{ctx}": state.inspect!}
-      {}
+    @rawReduce [], (total, ctxState) -> push total, ctxState.toObject()
+
 
 

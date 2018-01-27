@@ -2,7 +2,7 @@ require! {
   assert
   livescript
   bluebird: p
-  '../base2.ls': { NaiveTopology, CtxState, CtxView }
+  '../base2.ls': { NaiveTopology, CtxState, Ctx }
 }
 
 describe 'Automata', ->

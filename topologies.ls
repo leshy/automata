@@ -14,12 +14,14 @@ export class NaiveTopology extends Topology
     if not @data then @data = new List()
       
   inspect: ->
-    @states()
-    .map (.inspect!)
-    .join('\n')
+    colors.yellow(@constructor.name + "(") + @data.map((.inspect?!)).join(', ') + colors.yellow(")")
   
-  _set: (ctxState) ->
-    new @constructor data: @data.push ctxState
+  reduce: (cb) -> @data.reduce cb, new @constructor()
+  
+  rawReduce: (seed, cb) -> @data.reduce cb, seed
+  
+  _set: (ctxState) -> new @constructor data: @data.push ctxState
+
 
 
 export class DiscreteTopology extends Topology
@@ -37,7 +39,7 @@ export class DiscreteTopology extends Topology
     @data.get coords.join('-')
     
   _set: (ctxState) ->
-    console.log "SET", ctxState, ctxState.ctx.key(), ctxState.state.name
+#    console.log "SET", ctxState, ctxState.ctx.key(), ctxState.state.name
 
     new @constructor data: @data.set ctxState.ctx.key(), ctxState
 
