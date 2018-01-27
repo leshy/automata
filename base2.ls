@@ -1,3 +1,12 @@
+require! {
+  immutable: { Map, Seq, List, Set }: i
+  colors
+  util: { inspect }
+  leshdash: {
+    reduce, each, times, zip, defaults, mapFilter, assignWith, flattenDeep, map, keys, clone, filter, identity, push,
+    { typeCast }: w
+  }: _
+}
 
 # Context View
 # 
@@ -14,32 +23,35 @@ export class CtxView
       if not target? then return mod
       mod + target
   
-  applyTransform: (mod) ->
-    new @constructor @standardJoin(@data, mod), @topo
+  applyTransform: (mod) -> @standardJoin @ctx, mod
     
-  inspect: -> "Ctx(" + JSON.stringify(@data) + ")"
+  inspect: -> colors.red("Ctx(") + JSON.stringify(@ctx) + colors.red(")")
   
   t: (modifier, cb) ->
-    states = cb newctx = @applyTransform(modifier)
-    if not states then return []
-    if states@@ isnt Array then states = [states]
+    
+    newView = new @constructor(transformed = @applyTransform(modifier), @topo, @newTopo)
 
-    map states, (state) ~>
-      switch state@@
-        | Function => new CtxState(newctx, state)
-        | CtxState => state
+#    console.log @ctx, "via", modifier, 'is', transformed
+    newStates = cb newView
+    if not newStates then return []
+    if newStates@@ isnt Array then newStates = [newStates]
+
+    map newStates, (newState) ~>
+      switch newState@@
+        | Function => new CtxState(newView.ctx, newState)
+        |_ => newState
 
 
 # tuple holding a state within a context, knows how to .next(), returns array of ctxStates
 export class CtxState
-  (@ctx, @state) ->
-    if @state@@ isnt Function then throw Error "wrong state type"
-      
+  (@ctx, @state) -> true
   inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
-  
   next: (topology, newTopology) ->
-    @state new @topology.CtxView(@ctx, topology, newTopology)
-
+    flattenDeep @state new topology.CtxView @ctx, topology, newTopology
+    
+  toObject: ->
+    [ @ctx, @state.name ]
+    
 
 # Topology holding CtxStates
 #
@@ -48,7 +60,7 @@ export class CtxState
 # should potentially implement perception for states,
 # store states and contexts within an efficient data structure depending on perceptions implemented
 export class Topology
-  CtxView = CtxView
+  CtxView: CtxView
   
   get: (ctx) -> ...
   
@@ -60,17 +72,30 @@ export class Topology
 
   _set: (ctxState) -> ...
   
-  reduce: (cb) -> @data.reduce cb, new @constructor()
   
   map: (cb) -> @data.map cb
   
   next: ->
-    @reduce (topology, ctxState) ~>
-      @set newStates = ctxState.next @, topology
+    @reduce (newTopology, ctxState) ~>
+      nextStates = ctxState.next @, newTopology
+#      console.log ctxState.inspect! +  " -->", nextStates
+      newTopology.set ...nextStates
       
   toObject: ->
-    @reduce do
-      (total, state, ctx) -> total <<< {"#{ctx}": state.inspect!}
-      {}
+    @rawReduce [], (total, ctxState) -> push total, ctxState.toObject()
 
 
+
+export class NaiveTopology extends Topology
+  (data) ->
+    if data then @ <<< data
+    if not @data then @data = new List()
+      
+  inspect: ->
+    colors.yellow(@constructor.name + "(") + @data.map((.inspect?!)).join(', ') + colors.yellow(")")
+  
+  reduce: (cb) -> @data.reduce cb, new @constructor()
+  
+  rawReduce: (seed, cb) -> @data.reduce cb, seed
+  
+  _set: (ctxState) -> new @constructor data: @data.push ctxState

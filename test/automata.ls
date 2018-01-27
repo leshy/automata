@@ -2,40 +2,46 @@ require! {
   assert
   livescript
   bluebird: p
-  '../index.ls': { BlockSpace, Location, State }
+  '../base2.ls': { NaiveTopology, CtxState, CtxView }
 }
 
 describe 'Automata', ->
-  describe 'BlockSpace', ->
-    specify 'init', -> 
-      x = new BlockSpace()
-      assert x.get([1,2,3]) is void
+  specify 'basic', ->
+    t = new NaiveTopology()
 
-      y = x.set([1,2,3], 'bla')
-      assert y.get([1,2,3]) is 'bla'
+    testState = (ctx) -> return
+      ctx.t x: 10, (ctx) -> testState
+      ctx.t x: -11, (ctx) -> testState
 
-    specify 'set', -> 
-      space = new BlockSpace()
-      space = space.set([1,2,3], 'bla1')
-      space = space.set([1,1,1], 'bla2')
-      space = space.set([1,0,1], 'bla3')
+    seed = new CtxState({x: 1}, testState)
+    assert t.data.size is 0
 
-      assert.deepEqual do
-        Array.from(space.states())
-        [[ '1-2-3', 'bla1' ], [ '1-1-1', 'bla2' ], [ '1-0-1', 'bla3' ]]
+    t = t.set seed
+    assert.deepEqual t.toObject!, [ [ { x: 1 }, 'testState' ] ]
 
-    specify 'next', -> 
-      space = new BlockSpace()
-      space = space.set([1,2,3], new State('bla1'))
-      space = space.set([1,1,1], new State('bla2'))
-      space = space.set([1,0,1], new State('bla3'))
-      space = space.next()
+    t = t.next!
+    assert.deepEqual t.toObject!, [ [ { x: 11 }, 'testState' ], [ { x: -10 }, 'testState' ] ]
+    
+    t = t.next!
+    assert.deepEqual t.toObject!, [ [ { x: 21 }, 'testState' ], [ { x: 0 }, 'testState' ], [ { x: 0 }, 'testState' ], [ { x: -21 }, 'testState' ] ]
 
-      assert.deepEqual do
-        space.toObject(),
-        { '1-2-3': "State", '1-1-1': "State", '1-0-1': "State" }
+    
+  specify 'deep', ->
+    t = new NaiveTopology()
 
+    testState = (ctx) ->
+      ctx.t x: 10, (ctx) -> return
+          testState
+          ctx.t x: -1, (ctx) -> testState
 
-  describe 'Location' -> 
-    specify 'init' ->
-      location = new Location()
+    seed = new CtxState({x: 3}, testState)
+    assert t.data.size is 0
+
+    t = t.set seed
+    assert.deepEqual t.toObject!, [ [ { x: 3 }, 'testState' ] ]
+
+    t = t.next!
+    assert.deepEqual t.toObject!, [ [ { x: 13 }, 'testState' ], [ { x: 12 }, 'testState' ] ]
+
+    t = t.next!
+    assert.deepEqual t.toObject!, [ [ { x: 23 }, 'testState' ], [ { x: 22 }, 'testState' ], [ { x: 22 }, 'testState' ], [ { x: 21 }, 'testState' ] ]
