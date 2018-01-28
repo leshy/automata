@@ -34,10 +34,22 @@ export class Topo extends DiscreteTopology
   Ctx: CtxNaiveCoords
   
 topology = new Topo()
-topology = setPoint(topology, [2, 1])
-topology = setPoint(topology, [1, 0])
+
+# http://wiki.secretgeek.net/starting-patterns-gol
+
+# glider
+# topology = setPoint(topology, [2, 1])
+# topology = setPoint(topology, [1, 0])
+# topology = setPoint(topology, [0, 0])
+# topology = setPoint(topology, [0, 1])
+# topology = setPoint(topology, [0, 2])
+
+
+# R-Pentomino
+topology = setPoint(topology, [0, -1])
 topology = setPoint(topology, [0, 0])
+topology = setPoint(topology, [-1, 0])
 topology = setPoint(topology, [0, 1])
-topology = setPoint(topology, [0, 2])
-  
+topology = setPoint(topology, [1, 1])
+
 export topology

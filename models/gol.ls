@@ -37,10 +37,17 @@ setPoint = (topology, loc) ->
 
   
 topology = new DiscreteTopology()
-topology = setPoint(topology, [2, 1])
-topology = setPoint(topology, [1, 0])
+
+# glider
+# topology = setPoint(topology, [2, 1])
+# topology = setPoint(topology, [1, 0])
+# topology = setPoint(topology, [0, 0])
+# topology = setPoint(topology, [0, 1])
+# topology = setPoint(topology, [0, 2])
+
+topology = setPoint(topology, [-1, 0])
 topology = setPoint(topology, [0, 0])
-topology = setPoint(topology, [0, 1])
-topology = setPoint(topology, [0, 2])
+topology = setPoint(topology, [1, 0])
+
 
 export topology
