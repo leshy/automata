@@ -6,5 +6,5 @@ require! {
 
 export draw = ->
   { render, renderEvo } = discrete.draw(20)
-  renderEvo topology, 30, 1
+  renderEvo topology, 250, 1
 

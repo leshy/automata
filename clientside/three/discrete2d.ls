@@ -5,7 +5,19 @@ require! {
 }
 
 
-export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
+export draw = (distance) -> getscene distance, ({scene, camera, controls, renderer}) ->
+
+  # renderer.shadowMapEnabled = false;
+  # renderer.shadowMapSoft = true;
+  # renderer.shadowMapType = THREE.PCFShadowMap;
+  # light = new THREE.AmbientLight( 0xaaaaaa );
+  # scene.add( light );
+  
+  # directionalLight = window.directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+  # directionalLight.position.set( 100, 100, 100 );
+  # directionalLight.castShadow = true
+  # scene.add( directionalLight );
+  
   
   ret = do
     render: (topo, z=0) ->
@@ -16,16 +28,25 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
           return
 
         scale = 1
-        material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(#{ctx.cr or 255}, #{ctx.cg or 255}, #{ctx.cb or 255})")
+        
+        material = new THREE.LineBasicMaterial do
+          color: new THREE.Color("rgb(#{ctx.cr or 100}, #{ctx.cg or 100}, #{ctx.cb or 100})")
+          
+        # material.transparent = true
+        # material.opacity = 0.8
+
+#        material = new THREE.MeshLambertMaterial( { color: Math.random() * 0xffffff, opacity: 0.5 } )
+
         if state.name == "Check"
           material.transparent = true;
           material.opacity = 0.2;
 
-        cube = new THREE.Mesh( new THREE.BoxGeometry(1,1,1), material );
+        cube = new THREE.Mesh( new THREE.BoxGeometry(0.05,0.05,0.05), material );
+#        cube.receiveShadow = true;
         
-        cube.position.x = ctx.loc[0]
-        cube.position.y = ctx.loc[1]
-        cube.position.z = z
+        cube.position.x = ctx.loc[0] / 10
+        cube.position.y = ctx.loc[1] / 10
+        cube.position.z = z / 10
         scene.add( cube )
         
     renderEvo: (topo, n=9, distance=10) ->

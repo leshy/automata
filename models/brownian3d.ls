@@ -4,6 +4,7 @@ require! {
 }
 
 colormover = 15
+
 rndc = (color) ->
   newColor = (color or 127) + random(-colormover, colormover)
   if newColor > 255 then newColor = 255

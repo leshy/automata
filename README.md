@@ -20,5 +20,6 @@ views, storage and controllers are implemented as plugins
 ![tree](tree.jpg)
 
 ## CA
-
+game of life
+![gol](gol.jpg)
 

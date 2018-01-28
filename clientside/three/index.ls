@@ -21,13 +21,14 @@ export getscene = (distance, cb) ->
 
   light = new THREE.AmbientLight( 0xaaaaaa );
   scene.add( light );
+  
 
   camera  = window.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100 );
   camera.position.set( 0, 0, distance );
 #  camera.lookAt(new THREE.Vector3( 0, 0, -1 ))
 
   controls = new OrbitControls( camera, renderer.domElement );
-  controls.enableDamping = true;
+  controls.enableDamping = false
   controls.dampingFactor = 0.25;
   controls.enableZoom = true;
   controls.enableRotate = true;
@@ -35,7 +36,7 @@ export getscene = (distance, cb) ->
 
   composer = false
 
-  ret = cb({ scene, camera, controls })
+  ret = cb({ scene, camera, controls, renderer })
 
   shaders = -> 
     DotScreenShader = require('./shaders/DotScreenShader')

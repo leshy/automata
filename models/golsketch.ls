@@ -3,12 +3,24 @@ require! {
   '../index.ls': { DiscreteTopology, CtxState }
   '../contexts.ls': { CtxNaiveCoords }
 }
+colormover = 15
+
+rndc = (color) ->
+  newColor = (color or 127) + random(-colormover, colormover)
+  if newColor > 255 then newColor = 255
+  if newColor < 0 then newColor = 0
+  newColor
 
 placeChecks = (ctx) ->
   map ctx.neighCoords(), (coords) ->
     if not ctx.lookFuture(coords)
-      ctx.t loc: coords, (ctx) ->
-        Check
+      ctx.t do
+        loc: coords,
+        cr: rndc
+        cg: rndc
+        cb: rndc
+
+        (ctx) -> Check
 
 export On = (ctx) ->
 #  if ctx.ctx.loc[0] is 0 and ctx.ctx.loc[1] is 0
@@ -26,7 +38,7 @@ setPoint = (topology, loc) ->
     ctx.neighCoords()
     (topo, loc) ->
       if ctx.look(loc, On) then topo
-      else topo.set new CtxState(loc: ctx.coordinateTransform(loc), Check)
+      else topo.set new CtxState(cr: 0, cb: 200, cg: 0, loc: ctx.coordinateTransform(loc), Check)
         
     topology.set new CtxState(ctx.ctx, On)
 
