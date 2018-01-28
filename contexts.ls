@@ -41,27 +41,30 @@ export class Ctx2D extends Ctx
 
 
 export class CtxNaiveCoords extends Ctx
-    key: -> @data.loc.join('-')
+    key: -> @ctx.loc.join('-')
   
     applyTransform: (mod) ->
-      data = @standardJoin omit(@data, [ 'loc' ]), mod
-      <<< { loc: @coordinateTransform(mod.loc) }
+      @standardJoin(omit(@ctx, [ 'loc' ]), mod) <<< { loc: @coordinateTransform(mod.loc) }
         
-      new @constructor data, @topo
-      
     coordinateTransform: (mod) ->
-      target = @data.loc
+      target = @ctx.loc
       if not mod then return target
       if mod@@ is Function then mod(target)
       else map zip(target, mod), ([t, m]) -> t + m
-      
-    look: (loc, state, verbose=false) ->
+    
+    _look: (topo, loc, state, verbose=false) ->
       if verbose
-        console.log "CHECKING", @coordinateTransform(loc), @topo.get(@coordinateTransform(loc))?state?name
-        
-      lookState = @topo.get @coordinateTransform(loc)
+        console.log "LOOKING", @coordinateTransform(loc), topo.get(@coordinateTransform(loc))?state?name
+      lookState = topo.get @coordinateTransform(loc)
+      
       if not state then return lookState
       else lookState?state is state
+
+    look: (loc, state, verbose) ->
+      @_look @topo, loc, state, verbose
+      
+    lookFuture: (loc, state, verbose) ->
+      @_look @newTopo, loc, state, verbose
     
     neighCoords: ->
       return [

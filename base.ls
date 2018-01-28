@@ -49,7 +49,13 @@ export class CtxState
   (@ctx, @state) -> true
   inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
   next: (topology, newTopology) ->
-    flattenDeep @state new topology.Ctx @ctx, topology, newTopology
+    deepf = flattenDeep @state new topology.Ctx @ctx, topology, newTopology
+    map do
+      filter deepf, identity
+      (element) ~> 
+        switch element@@
+          | CtxState => element
+          |_ => new @constructor @ctx, element
     
   toObject: ->
     [ @ctx, @state.name ]
@@ -79,7 +85,7 @@ export class Topology
   next: ->
     @reduce (newTopology, ctxState) ~>
       nextStates = ctxState.next @, newTopology
-      console.log ctxState.inspect! +  " -->", nextStates
+#      console.log ctxState.inspect! +  " -->", nextStates
       newTopology.set ...nextStates
       
   toObject: ->

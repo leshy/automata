@@ -23,7 +23,6 @@ export class NaiveTopology extends Topology
   _set: (ctxState) -> new @constructor data: @data.push ctxState
 
 
-
 export class DiscreteTopology extends Topology
   (data) ->
     if data then @ <<< data
@@ -34,12 +33,12 @@ export class DiscreteTopology extends Topology
     .map (.inspect!)
     .join('\n')
 
+  reduce: (cb) -> @data.reduce cb, new @constructor()
+
   get: (coords) ->
-    console.log @data, coords.join('-')
+#    console.log @data, coords.join('-')
     @data.get coords.join('-')
     
   _set: (ctxState) ->
-#    console.log "SET", ctxState, ctxState.ctx.key(), ctxState.state.name
-
-    new @constructor data: @data.set ctxState.ctx.key(), ctxState
+    new @constructor data: @data.set ctxState.ctx.loc.join('-'), ctxState
 
