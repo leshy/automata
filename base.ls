@@ -19,7 +19,6 @@ export class Ctx
 
   standardJoin: (target, mod) ->
     assignWith clone(target), mod, (target, mod) ~>
-#      console.log "join", target, "mod", mod
       if not mod? then return target
       if mod@@ is Function then return mod target, @
       if not target? then return mod
@@ -80,7 +79,7 @@ export class Topology
   next: ->
     @reduce (newTopology, ctxState) ~>
       nextStates = ctxState.next @, newTopology
-#      console.log ctxState.inspect! +  " -->", nextStates
+      console.log ctxState.inspect! +  " -->", nextStates
       newTopology.set ...nextStates
       
   toObject: ->

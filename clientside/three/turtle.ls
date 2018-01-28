@@ -17,6 +17,19 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
 
   ret = do
     render: (topo, z=0) ->
+
+      # material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(255 ,255 , 255)")
+      # material.transparent = true;
+      # material.opacity = 0.3;
+      # cube = new THREE.Mesh(new THREE.BoxGeometry( 1, 1, 1 ), material);
+
+      
+      # cube.position.z = z
+      # cube.position.x = 0
+      # cube.position.y = 0
+      # scene.add( cube )
+
+      
       topo.data.map (ctxState) ->
         { ctx, state } = ctxState
         material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(#{ctx.cr or 255}, #{ctx.cg or 255}, #{ctx.cb or 255})")
@@ -26,11 +39,18 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
         direction = new THREE.Vector3()
 
         scale = 1
+        
+        geometry.vertices.push( new THREE.Vector3(ctx.x, ctx.y, z))
+        
         { x, y } = move({x: (ctx.x), y: (ctx.y)}, { x: -ctx.s, y: 0 }, ctx.r, 1)
-#        console.log (ctx.x) * scale, (ctx.y) * scale, z, x * scale, y * scale, z
+        
         geometry.vertices.push( new THREE.Vector3(x * scale, y * scale, z))
-
+        
         object = new THREE.Line( geometry, material )
+
+#        console.log (ctx.x) * scale, (ctx.y) * scale, z, x * scale, y * scale, z
+
+        
         scene.add( object )
 
         
@@ -38,6 +58,7 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
       _.times n, (z) ->
         ret.render(topo, z * distance)
         topo := topo.next!
+        console.log topo
 
     
   return ret

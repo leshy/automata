@@ -1,2 +1,2 @@
-global.draw = require('./brownian3d.ls').draw
+global.draw = require('./s3d.ls').draw
 

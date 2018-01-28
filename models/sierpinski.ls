@@ -28,6 +28,8 @@ export Sierpinski = (ctx) ->
             A
             
   A ctx
-
-
-export topology = new NaiveTopology().set new CtxState(x: 0, y: 3.25, s: 10, r: 0, Sierpinski)
+  
+export class Topo extends NaiveTopology
+  Ctx: Ctx2D
+  
+export topology = new Topo().set new CtxState(x: 0, y: 3.25, s: 10, r: 0, Sierpinski)

@@ -17,24 +17,25 @@ export class Ctx2D extends Ctx
     radians = (d) -> d * Math.PI / 180
 
     r = radians rotation
-    
     x = (v2.x or 0) * scale
     y = (v2.y or 0) * scale
     
     x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
     y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
+
     
     { x: v1.x + x2, y: v1.y + y2 }
 
   applyTransform: (mod) ->
-    ctx = clone @data
-    
+    ctx = clone @ctx
     cvector = ctx{x, y}
     mvector = mod{x, y}
     
-    normalizeRotation = (angle) -> r: angle % 360
+    normalizeRotation = (angle) -> { r: angle % 360 }
     
-    new @constructor @standardJoin(ctx, mod)    
+    ctx = @standardJoin(ctx, mod)
+
+    ctx
       <<< normalizeRotation(ctx.r)
       <<< @_move(cvector, mvector, ctx.r, ctx.s)
 
