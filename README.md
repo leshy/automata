@@ -11,15 +11,15 @@ spaces are immutable objects, machines are functions returning other machines po
 views, storage and controllers are implemented as plugins
 
 ## Deterministic L-systems
-![s3d](s3d.jpg)
+![s3d](samples/s3d.jpg)
 
 ## Stohastic L-systems
 ### 3D
-![splash](splash.jpg)
+![splash](samples/splash.jpg)
 ### 2D
-![tree](tree.jpg)
+![tree](samples/tree.jpg)
 
 ## CA
-game of life
-![gol](gol.jpg)
+game of life, R-Pentomino pattern
+![gol](samples/gol.jpg)
 

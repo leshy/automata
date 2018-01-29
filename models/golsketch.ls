@@ -3,8 +3,8 @@ require! {
   '../index.ls': { DiscreteTopology, CtxState }
   '../contexts.ls': { CtxNaiveCoords }
 }
-colormover = 15
 
+colormover = 10
 rndc = (color) ->
   newColor = (color or 127) + random(-colormover, colormover)
   if newColor > 255 then newColor = 255
@@ -19,18 +19,14 @@ placeChecks = (ctx) ->
         cr: rndc
         cg: rndc
         cb: rndc
-
         (ctx) -> Check
 
 export On = (ctx) ->
-#  if ctx.ctx.loc[0] is 0 and ctx.ctx.loc[1] is 0
-#  console.log " ** * **  LOOK RES", ctx.ctx.loc, ctx.count(On, true)
-  if ctx.count(On) in [ 2, 3 ] then [ On ]
+  if ctx.count(On) in [ 2, 3 ] then On
   else placeChecks(ctx)
       
 export Check = (ctx) ->
   if ctx.count(On) == 3 then [ On, ...placeChecks(ctx) ]
-#  if ctx.count(On) == 3 then [ On  ]
 
 setPoint = (topology, loc) ->
   ctx = new CtxNaiveCoords({ loc: loc }, topology)
