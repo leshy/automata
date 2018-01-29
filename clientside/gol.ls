@@ -5,6 +5,6 @@ require! {
 
 
 export draw = ->
-  { render, renderEvo, renderSlowSlice } = discrete.draw(3)
-  renderEvo topology, 200, 1
+  { render, renderEvo, renderSlowEvo, renderSlowSlice } = discrete.draw(3)
+  renderSlowEvo topology, 100, 1
 
