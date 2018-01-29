@@ -12,6 +12,11 @@ require! {
 
 export class CtxNaive extends Ctx
 
+
+export class Ctx3DTurtle extends Ctx
+  -> true
+
+
 export class Ctx2D extends Ctx
   _move: (v1, v2, rotation, scale=1) ->
     radians = (d) -> d * Math.PI / 180
@@ -85,4 +90,6 @@ export class CtxNaiveCoords extends Ctx
         (total, coords) ~>
           if @look(coords, state, verbose) then total + 1 else total
         0
+
+
 

@@ -22,7 +22,8 @@
     "leshdash": "git://github.com/leshy/leshdash.git",
     "three": "^0.89.0",
     "three-effectcomposer": "0.0.1",
-    "three-orbit-controls": "^82.1.0"
+    "three-orbit-controls": "^82.1.0",
+    "vector.js": "^2.0.0"
   },
   "devDependencies": {
     "browserify": "^15.1.0",

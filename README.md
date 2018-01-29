@@ -22,4 +22,5 @@ views, storage and controllers are implemented as plugins
 ## CA
 game of life, R-Pentomino pattern
 ![gol](samples/gol.jpg)
+![gol](samples/gol2.jpg)
 

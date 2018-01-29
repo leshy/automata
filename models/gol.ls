@@ -4,7 +4,8 @@ require! {
   '../contexts.ls': { CtxNaiveCoords }
 }
 
-colormover = 5
+colormover = 10
+
 rndc = (color) ->
   newColor = (color or 127) + random(-colormover, colormover)
   if newColor > 255 then newColor = 255
