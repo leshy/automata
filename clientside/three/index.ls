@@ -54,7 +54,7 @@ export getscene = (distance, cb) ->
     effect.renderToScreen = true;
     composer.addPass( effect );
 
-#  shaders!
+  shaders!
 
   render = ->
     requestAnimationFrame render
