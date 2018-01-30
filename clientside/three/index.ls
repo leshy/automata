@@ -17,7 +17,7 @@ export getscene = (distance, cb) ->
   document.body.appendChild( renderer.domElement );
 
   scene = new THREE.Scene();
-#  scene.fog = new THREE.Fog( 0x59472b, 1000, 3000 );
+  scene.fog = new THREE.Fog( 0x59472b, 1000, 3000 );
 
   light = new THREE.AmbientLight( 0xaaaaaa );
   scene.add( light );

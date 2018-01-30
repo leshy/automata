@@ -6,15 +6,24 @@ require! {
     reduce, each, times, zip, defaults, mapFilter, assignWith, flatten, map, keys, clone, omit,
     { typeCast }: w
   }: _
+  three: THREE
   
   './base.ls': { Ctx }
 }
 
 export class CtxNaive extends Ctx
 
-
 export class Ctx3DTurtle extends Ctx
-  -> true
+  _move: (v1, v2, speed) ->
+    v1 = new THREE.Vector3(...v1)
+    v2 = (new THREE.Vector3(...v2)).normalize()
+    console.log "MOVE", speed, v1, v2
+    vres = v1.addScaledVector(v2, speed)
+    { loc: [ vres.x, vres.y, vres.z ] }
+    
+  applyTransform: (mod) ->
+    ctx = @standardJoin(@ctx, mod)
+    ctx <<< @_move(ctx.loc, ctx.dir, ctx.speed * ctx.size)
 
 
 export class Ctx2D extends Ctx

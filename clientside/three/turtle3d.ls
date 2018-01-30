@@ -19,15 +19,15 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
     render: (topo, z=0) ->
       topo.map (ctxState) ->
         { ctx, state } = ctxState
-        material = new THREE.LineBasicMaterial color: new THREE.Color("rgb(#{ctx.cr or 255}, #{ctx.cg or 255}, #{ctx.cb or 255})")
+        
+        material = new THREE.LineBasicMaterial do
+          color: new THREE.Color("rgb(#{ctx.cr or 255}, #{ctx.cg or 255}, #{ctx.cb or 255})")
 
         scale = 1
-        cube = new THREE.Mesh( new THREE.BoxGeometry( ctx.size, ctx.size, ctx.size ), material );
-#        console.log ctx
-#        console.log "DRAW", ctx.x, ctx.y, ctx.z, ctx.size
-        cube.position.x = ctx.x
-        cube.position.y = ctx.y
-        cube.position.z = ctx.z
+        cube = new THREE.Mesh( new THREE.SphereGeometry( ctx.size), material );
+        cube.position.x = ctx.loc[0]
+        cube.position.y = ctx.loc[2]
+        cube.position.z = ctx.loc[1]
         scene.add( cube )
         
     renderEvo: (topo, n=9, distance=10) ->
@@ -40,6 +40,5 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
       topo = topo.next!
       ret.render(topo, n * distance)
       setTimeout((-> ret.renderSlowEvo(topo, n-1,distance)), 20)
-
     
   return ret

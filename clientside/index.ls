@@ -1,2 +1,2 @@
-global.draw = require('./gol.ls').draw
+global.draw = require('./three3d.ls').draw
 

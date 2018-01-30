@@ -16,11 +16,8 @@ views, storage and controllers are implemented as plugins
 ## Stohastic L-systems
 ### 3D
 ![splash](samples/splash.jpg)
-### 2D
-![tree](samples/tree.jpg)
+![tree3d](samples/three3d.jpg)
 
 ## CA
 game of life, R-Pentomino pattern
 ![gol](samples/gol.jpg)
-![gol](samples/gol2.jpg)
-
