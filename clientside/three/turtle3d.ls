@@ -19,9 +19,13 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
     render: (topo, z=0) ->
       topo.map (ctxState) ->
         { ctx, state } = ctxState
-        
-        material = new THREE.LineBasicMaterial do
-          color: new THREE.Color("rgb(#{ctx.cr or 255}, #{ctx.cg or 255}, #{ctx.cb or 255})")
+
+        color = ctx.color
+        if ctx.counter > 1 then color = 255 - color
+          
+        material = new THREE.MeshBasicMaterial do
+#          color: new THREE.Color("rgb(#{ctx.cr or 255}, #{ctx.cg or 255}, #{ctx.cb or 255})")
+          color: new THREE.Color("rgb(#{color},#{color},#{color})")
 
         scale = 1
         cube = new THREE.Mesh( new THREE.SphereGeometry( ctx.size), material );

@@ -9,7 +9,8 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha test/*.ls",
     "devserver": "./node_modules/.bin/budo clientside/index.ls:bundle.js --live -- -t browserify-livescript",
-    "make": "./node_modules/.bin/browserify -dt browserify-livescript -o bundle.js clientside/index.ls"
+    "make": "./node_modules/.bin/browserify -dt browserify-livescript -o static/bundle.js clientside/index.ls",
+    "watch": "./node_modules/.bin/watchify -v -dt browserify-livescript -o static/bundle.js clientside/index.ls"
   },
   "keywords": [],
   "author": "lesh <lesh@sysphere.org> (http://lesh.sysphere.org)",

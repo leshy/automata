@@ -17,7 +17,7 @@ export class Ctx3DTurtle extends Ctx
   _move: (v1, v2, speed) ->
     v1 = new THREE.Vector3(...v1)
     v2 = (new THREE.Vector3(...v2)).normalize()
-    console.log "MOVE", speed, v1, v2
+#    console.log "MOVE", speed, v1, v2
     vres = v1.addScaledVector(v2, speed)
     { loc: [ vres.x, vres.y, vres.z ] }
     

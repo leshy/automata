@@ -17,12 +17,14 @@ export getscene = (distance, cb) ->
   document.body.appendChild( renderer.domElement );
 
   scene = new THREE.Scene();
-  scene.fog = new THREE.Fog( 0x59472b, 1000, 3000 );
-
+#  scene.fog = new THREE.Fog( 0x59472b, 1000, 3000 );
+#  scene.add new THREE.GridHelper( 100, 10 );
+  
   light = new THREE.AmbientLight( 0xaaaaaa );
   scene.add( light );
   
 
+#  camera  = window.camera = new THREE.OrthographicCamera( 70, window.innerWidth / window.innerHeight, 1, 100)
   camera  = window.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100 );
   camera.position.set( 0, 0, distance );
 #  camera.lookAt(new THREE.Vector3( 0, 0, -1 ))
