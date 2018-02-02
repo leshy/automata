@@ -6,7 +6,7 @@
  
 should be able to simulate transformation rule based generation like L-systems, brownian motion etc or stuff that perceves, like CA or boids
 
-spaces are immutable objects, machines are functions returning other machines potentially with the original context transformed.
+spaces are immutable objects, machines are functions returning other machines potentially with the parent machine context transformed.
 
 views, storage and controllers are implemented as plugins
 
