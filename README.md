@@ -34,6 +34,7 @@ views, storage and controllers are implemented as plugins
 ### 3D
 ![splash](samples/splash.jpg)
 ```livescript
+mapper = linlin(0, 1, 0, 2)
 mover = (pos, ctx) -> pos + (random(-mapper(1 - ctx.ctx.size), mapper(1 - ctx.ctx.size), true))
 export Branch = (ctx) ->
   ctx.t do
