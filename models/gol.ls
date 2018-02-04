@@ -20,9 +20,7 @@ rndcBlock = do
 placeChecks = (ctx) ->
   map ctx.neighCoords(), (coords) ->
     if not ctx.lookFuture(coords)
-      ctx.t do
-        { loc: coords } <<< rndcBlock
-        (ctx) -> Check
+      ctx.t { loc: coords } <<< rndcBlock, (ctx) -> Check
 
 export On = (ctx) ->
   if ctx.count(On) in [ 2, 3 ] then ctx.t rndcBlock, (ctx) -> [ On ]

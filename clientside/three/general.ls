@@ -4,15 +4,8 @@ require! {
   './index.ls': { getscene }
 }
 
-
-move = (v1, v2, rotation, size=1) ->
-  radians = (d) -> d * Math.PI / 180
-  r = radians rotation
-  x = (v2.x or 0) * size
-  y = (v2.y or 0) * size
-  x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
-  y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
-  { x: v1.x + x2, y: v1.y + y2 }
+timeScale = 1.5
+env = {}
 
 export draw = (distance) -> getscene distance, ({scene, camera, controls, renderer}) ->
 
@@ -27,14 +20,33 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls, render
   # directionalLight.castShadow = true
   # scene.add( directionalLight );
   ret = do
+    time: (time=0) ->
+
+      if not env.time
+        geometry = new THREE.BoxGeometry(0.05, 5, 5)
+
+        material = new THREE.MeshLambertMaterial do
+          color: "red"
+          transparent: true
+          opacity: 0.75
+
+        object = new THREE.Mesh geometry, material
+        object.position.x = time * timeScale
+        object.position.z = 0
+        object.position.y = 0
+        
+        scene.add env.time = object
+      else
+        env.time.position.x = time * timeScale
+
+
     render: (topo, z=0) ->
       ret = []
       topo.map (ctxState) ->
-        { ctx, state } = ctxState
-        
-        if state.name == "Check"
+        [ ctx, state ] = ctxState
+        if state == "Check"
           return
-
+          
         scale = 1
         
           
@@ -46,9 +58,9 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls, render
         # material = new THREE.MeshPhongMaterial do
         #   color: new THREE.Color("rgb(#{ctx.cr or 100}, #{ctx.cg or 100}, #{ctx.cb or 100})")
 
-        geometry = new THREE.BoxGeometry(0.1, 5, 5)
+        geometry = new THREE.BoxGeometry(0.1, 1, 1)
 
-        color = switch state.name
+        color = switch state
           | "Beat" => new THREE.Color("white")
           | "TwoBeats" => new THREE.Color("blue")
           | "RandomBeat" => new THREE.Color("red")
@@ -64,9 +76,9 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls, render
           
         # geometry = new THREE.EdgesGeometry geometry
         # object = new THREE.LineSegments geometry, material
-  
+
         object = new THREE.Mesh geometry, material
-        object.position.x = ctx.time * 1.5
+        object.position.x = ctx.time * timeScale
         object.position.z = 0
         object.position.y = z 
 

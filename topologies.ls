@@ -4,7 +4,7 @@ require! {
     reduce, each, times, zip, defaults, mapFilter, assignInWith, flatten, map, keys, clone,
     { typeCast }: w
   }: _
-    
+  colors    
   './base.ls': { Topology, CtxState }
 }
 
@@ -21,6 +21,10 @@ export class NaiveTopology extends Topology
   rawReduce: (seed, cb) -> @data.reduce cb, seed
   
   _set: (ctxState) -> new @constructor data: @data.push ctxState
+
+
+export class HeuristicTopology extends NaiveTopology
+  -> true
 
 
 export class DiscreteTopology extends Topology

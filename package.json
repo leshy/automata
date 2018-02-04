@@ -21,6 +21,7 @@
     "getusermedia": "^2.0.1",
     "hark": "^1.1.6",
     "leshdash": "git://github.com/leshy/leshdash.git",
+    "midi": "^0.9.5",
     "three": "^0.89.0",
     "three-effectcomposer": "0.0.1",
     "three-orbit-controls": "^82.1.0",

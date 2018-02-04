@@ -35,6 +35,7 @@ export class Ctx
 #    console.log @ctx, "via", modifier, 'becomes', transformed
  
     newStates = cb newView
+    
     if not newStates then return []
     if newStates@@ isnt Array then newStates = [newStates]
 
@@ -57,7 +58,7 @@ export class CtxState
           | CtxState => element
           |_ => new @constructor @ctx, element
     
-  toObject: ->
+  serialize: ->
     [ @ctx, @state.name ]
     
 
@@ -88,8 +89,9 @@ export class Topology
 #      console.log ctxState.inspect! +  " -->", nextStates
       newTopology.set ...nextStates
       
-  toObject: ->
-    @rawReduce [], (total, ctxState) -> push total, ctxState.toObject()
+  serialize: ->
+    @rawReduce [], (total, ctxState) -> push total, ctxState.serialize()
 
-
+  deserialize: (data) ->
+    @reduce (topo, element) -> topo.add ctxState.deserialize(element)
 

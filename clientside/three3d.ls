@@ -6,5 +6,5 @@ require! {
 
 export draw = ->
   { render, renderEvo, renderSlowEvo, renderSlowSlice } = turtle.draw(5)
-  renderEvo topology, 125, 1
+  renderEvo topology, 50, 1
 
