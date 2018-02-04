@@ -28,7 +28,7 @@ export Tempo = (ctx) -> return
     [ 1, TwoBeats ]
     [ 1, RandomBeat ]
   ctx.t do
-    time: 1
+    time: 0.5
     -> Tempo
 
 export class Topo extends NaiveTopology

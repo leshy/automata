@@ -4,25 +4,42 @@ require! {
   './index.ls': { getscene }
 }
 
-timeScale = 1.5
+timeScale = 2.5
 env = {}
 
 export draw = (distance) -> getscene distance, ({scene, camera, controls, renderer}) ->
 
-  # renderer.shadowMap.enabled = false;
-  # renderer.shadowMap.soft = true;
-  # renderer.shadowMap.type = THREE.PCFShadowMap;
-  # light = new THREE.AmbientLight( 0xaaaaaa );
-  # scene.add( light );
+  renderer.shadowMap.enabled = false;
+  renderer.shadowMap.soft = true;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
+  light = new THREE.AmbientLight( 0xaaaaaa );
+  scene.add( light );
   
   # directionalLight = window.directionalLight = new THREE.DirectionalLight( 0xffffff, 0.3 );
   # directionalLight.position.set( 100, 100, 100 );
   # directionalLight.castShadow = true
   # scene.add( directionalLight );
+
+  drawScale = (size=20) -> 
+    times size, (n) ->
+      geometry = new THREE.BoxGeometry(timeScale, 5, 0.1)
+      material = new THREE.MeshLambertMaterial do
+        color: "white"
+        transparent: true
+        opacity: if n % 2 then 0.1 else 0.2
+
+      object = new THREE.Mesh geometry, material
+      object.position.x = (timeScale * n) + 1
+      object.position.z = -2.5
+      object.position.y = 0
+      scene.add object        
+      
   ret = do
     time: (time=0) ->
 
       if not env.time
+        drawScale()
+        
         geometry = new THREE.BoxGeometry(0.05, 5, 5)
 
         material = new THREE.MeshLambertMaterial do

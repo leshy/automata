@@ -34,10 +34,12 @@ createApi = -> new p (resolve,reject) ~>
   console.log 'create api'
   
   { render, time } = painter.draw(20)
-
-  env.lweb.onQuery { time: Number }, (msg, reply, realm) ->
-    console.log "TIME", msg.time
+  
+  env.lweb.channel("time").join (msg) ->
     time(msg.time)
+
+  # env.lweb.onQuery { time: Number }, (msg, reply, realm) ->
+  #   console.log "TIME", msg.time
 
   env.lweb.onQuery { render: true }, (msg, reply, realm) ->
     console.log 'render req', msg.render
@@ -48,7 +50,6 @@ createApi = -> new p (resolve,reject) ~>
 broadcastReady = -> new p (resolve,reject) ~>
   console.log 'broadcast ready'
   env.lweb.query ready: true, (msg, reply) -> resolve!
-
 
 p.all [ wait_document(), connect() ]
 .then subscribe
