@@ -1,12 +1,12 @@
 require! {
-  leshdash: { times }
-  ribcage,
   fs
+  leshdash: { times }
+  ribcage
   'backbone4000/extras': Backbone
   './index.ls': { Topology }
 }
   
-require! { './models/breakcore.ls': { topology } }
+require! { './models/breakcore.ls': { getTopo } }
 
 settings = do
   verboseInit: true
@@ -53,7 +53,7 @@ ribcage.init env, (err, env) ->
       env.lweb.channel('time').broadcast time: env.time
     50
     
-  topo = topology
+  topo = getTopo()
   times 50, -> topo := topo.next!
 
   env.lweb.onQuery ready: true, (msg, reply, { client }) ->
@@ -61,8 +61,5 @@ ribcage.init env, (err, env) ->
     client.query { render: topo.serialize! }, (msg) -> console.log "render", msg
     client.query { time: 0 }
 
-
-Sequencer = Backbone.MotherShip('topo').extend4000 do
-  topoClass: Backbone.Model
 
 

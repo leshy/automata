@@ -12,6 +12,7 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls, render
   renderer.shadowMap.enabled = false;
   renderer.shadowMap.soft = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
+  
   light = new THREE.AmbientLight( 0xaaaaaa );
   scene.add( light );
   
@@ -61,11 +62,6 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls, render
       ret = []
       topo.map (ctxState) ->
         [ ctx, state ] = ctxState
-        if state == "Check"
-          return
-          
-        scale = 1
-        
           
         # material = new THREE.LineBasicMaterial do
         #   color: new THREE.Color("rgb(#{ctx.cr or 100}, #{ctx.cg or 100}, #{ctx.cb or 100})")
@@ -75,15 +71,14 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls, render
         # material = new THREE.MeshPhongMaterial do
         #   color: new THREE.Color("rgb(#{ctx.cr or 100}, #{ctx.cg or 100}, #{ctx.cb or 100})")
 
-        geometry = new THREE.BoxGeometry(0.1, 1, 1)
-
         color = switch state
-          | "Beat" => new THREE.Color("white")
-          | "TwoBeats" => new THREE.Color("blue")
-          | "RandomBeat" => new THREE.Color("red")
+          | "Note" => new THREE.Color("white")
           |_ => false
+          
 
         if not color then return
+          
+        geometry = new THREE.BoxGeometry(ctx.sustain, 1, 1)
           
         material = new THREE.MeshLambertMaterial do
           color: color
