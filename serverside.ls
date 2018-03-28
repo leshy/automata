@@ -6,7 +6,7 @@ require! {
   './index.ls': { Topology }
 }
   
-require! { './models/breakcore.ls': { getTopo } }
+require! { './models/gol.ls': { topology } }
 
 settings = do
   verboseInit: true
@@ -53,13 +53,16 @@ ribcage.init env, (err, env) ->
       env.lweb.channel('time').broadcast time: env.time
     50
     
-  topo = getTopo()
-  times 50, -> topo := topo.next!
 
   env.lweb.onQuery ready: true, (msg, reply, { client }) ->
     reply.end ok: true
-    client.query { render: topo.serialize! }, (msg) -> console.log "render", msg
+#    client.query { render: topo.serialize! }, (msg) -> console.log "render", msg
     client.query { time: 0 }
+    
+    topo = topology
+    times 50, ->
+      client.query { render: topo.serialize!, z: it }, (msg) -> console.log "render", msg
+      topo := topo.next!
 
 
 

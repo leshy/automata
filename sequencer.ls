@@ -1,6 +1,6 @@
 require! {
-  leshdash: { times, wait }
   midi
+  leshdash: { times, wait, each }
   'backbone4000/extras': Backbone
 }
 
@@ -14,9 +14,27 @@ Note = Backbone.Model.extend4000 do
       (@sustain or 1) * 1000
     
 Seq = Backbone.Model.extend4000 do
+
+  tempo: void
   
   inspect: ->
     "seq(#{@channel})"
+
+  show: ->
+    each @notes, ->
+      console.log it
+    
+  initialize: ({ topo, channel=0 }) ->
+    @channel = channel
+    @index = 0
+    
+    makeNote = ({ ctx, state }) ~> 
+      if state.name isnt "Note" then false
+      else [ ctx.time, new Note(ctx{sustain, note, velocity}) ]
+    
+    @notes = topo.rawReduce [], (total, ctxState) ->
+      if not newNote = makeNote(ctxState) then total
+      else [ ...total, newNote ]
 
   play: (player) ->
     if @notes.length - 1 is @index then
@@ -36,24 +54,14 @@ Seq = Backbone.Model.extend4000 do
       ((time - @lastTime) * 1000)
 
     @lastTime = time
-    
-  initialize: ({ topo, channel=0 }) ->
-    @channel = channel
-    @index = 0
-    
-    makeNote = ({ ctx, state }) ~> 
-      if state.name isnt "Note" then false
-      else [ ctx.time, new Note(ctx{sustain, note, velocity}) ]
-    
-    @notes = topo.rawReduce [], (total, ctxState) ->
-      if not newNote = makeNote(ctxState) then total
-      else [ ...total, newNote ]
 
+                                
 Sequencer = Backbone.MotherShip('seq').extend4000 do
   seqClass: Backbone.Model
 
-Looper = Backbone.MotherShip('loop').extend4000 do
-  topoClass: Backbone.Model
+
+Looper = Backbone.MotherShip('seq').extend4000 do
+  seqClass: Seq
   initialize: ->
     @input = new midi.input()
     @output = new midi.output()
@@ -76,23 +84,21 @@ Player = Backbone.Model.extend4000 do
     console.log "MIDIOUT", msg
     @output.sendMessage msg
 
-
-
 require! { './models/breakcore.ls': { getTopo } }
 
-l = new Looper()
+looper = new Looper()
 
-topo = getTopo()
-times 50, -> topo := topo.next!
+# topo = getTopo()
+# times 50, -> topo := topo.next!
+# seq1 = new Seq(channel: 0, topo: topo)
 
-seq1 = new Seq(channel: 0, topo: topo)
+#seq1.show()
 
+# topo = getTopo(note: 30, sustain: 0.5)
+# times 50, -> topo := topo.next!
 
-topo = getTopo(note: 30, sustain: 0.5)
-times 50, -> topo := topo.next!
+# seq2 = new Seq(topo: topo)
 
-seq2 = new Seq(topo: topo)
-
-player = new Player()
-seq1.play player
+#player = new Player()
+#seq1.play player
 #seq2.play player

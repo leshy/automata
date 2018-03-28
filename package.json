@@ -8,9 +8,9 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha test/*.ls",
-    "devserver": "./node_modules/.bin/budo clientside/index.ls:bundle.js --live -- -t browserify-livescript",
-    "make": "./node_modules/.bin/browserify -dt browserify-livescript -o static/bundle.js clientside/index.ls",
-    "watch": "./node_modules/.bin/watchify -v -dt browserify-livescript -o static/bundle.js clientside/index.ls"
+    "devserver": "./node_modules/.bin/budo clientside/index.ls:bundle.js --exclude jquery --live -- -t browserify-livescript",
+    "make": "./node_modules/.bin/browserify -dt browserify-livescript --exclude jquery -o static/bundle.js clientside/index.ls",
+    "watch": "./node_modules/.bin/watchify -v -dt browserify-livescript --exclude jquery -o static/bundle.js clientside/index.ls"
   },
   "keywords": [],
   "author": "lesh <lesh@sysphere.org> (http://lesh.sysphere.org)",
@@ -24,6 +24,8 @@
     "getusermedia": "^2.0.1",
     "hark": "^1.1.6",
     "immutable": "^3.8.2",
+    "jquery": "^3.3.1",
+    "jquery-browserify": "^1.8.1",
     "leshdash": "git+ssh://git@github.com/leshy/leshdash.git",
     "lweb3": "git+ssh://git@github.com/leshy/lweb3.git",
     "midi": "^0.9.5",

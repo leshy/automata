@@ -43,7 +43,7 @@ createApi = -> new p (resolve,reject) ~>
 
   env.lweb.onQuery { render: true }, (msg, reply, realm) ->
     console.log 'render req', msg.render
-    render msg.render
+    render msg.render, (msg.z or 0)
     reply.end { render: true }
   resolve true
 

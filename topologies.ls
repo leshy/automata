@@ -32,8 +32,9 @@ export class DiscreteTopology extends Topology
     if data then @ <<< data
     if not @data then @data = new Map()
       
+  rawReduce: (seed, cb) -> @data.reduce cb, seed
   inspect: ->
-    @states()
+    @data
     .map (.inspect!)
     .join('\n')
 
