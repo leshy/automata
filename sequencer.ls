@@ -1,6 +1,6 @@
 require! {
   midi
-  leshdash: { times, wait, each }
+  leshdash: { times, wait, each, sortBy, find, intersection }
   'backbone4000/extras': Backbone
 }
 
@@ -12,9 +12,8 @@ Note = Backbone.Model.extend4000 do
     setTimeout do
       (~> player.midiOut [ 128 + channel, @note, 0 ])
       (@sustain or 1) * 1000
-    
-Seq = Backbone.Model.extend4000 do
 
+Seq = Backbone.Model.extend4000 do
   tempo: void
   
   inspect: ->
@@ -36,6 +35,9 @@ Seq = Backbone.Model.extend4000 do
       if not newNote = makeNote(ctxState) then total
       else [ ...total, newNote ]
 
+    @notes = sortBy(@notes, ([time, ...rest]) -> time)
+    
+
   play: (player) ->
     if @notes.length - 1 is @index then
       @index = 0
@@ -55,10 +57,18 @@ Seq = Backbone.Model.extend4000 do
 
     @lastTime = time
 
-                                
+StandardInterpreter = (state, defaultNote) ->
+  if not state.note or not state.time then return false
+  else return [ state.time, new Note(defaultNote <<< state{sustain, note, velocity}) ]
+
+Interpret = (topology, interpreter=StandardInterpreter) ->
+  topo.rawReduce [], (total, state) ->
+    if not seqNote = interpreter(state) then return total
+    return [ ...total, seqNote ]
+
+
 Sequencer = Backbone.MotherShip('seq').extend4000 do
   seqClass: Backbone.Model
-
 
 Looper = Backbone.MotherShip('seq').extend4000 do
   seqClass: Seq
@@ -87,18 +97,17 @@ Player = Backbone.Model.extend4000 do
 require! { './models/breakcore.ls': { getTopo } }
 
 looper = new Looper()
-
-# topo = getTopo()
-# times 50, -> topo := topo.next!
-# seq1 = new Seq(channel: 0, topo: topo)
-
-#seq1.show()
+topo = getTopo()
+times 150, -> topo := topo.next!
+seq1 = new Seq(channel: 0, topo: topo)
+seq1.show()
 
 # topo = getTopo(note: 30, sustain: 0.5)
 # times 50, -> topo := topo.next!
 
 # seq2 = new Seq(topo: topo)
 
-#player = new Player()
-#seq1.play player
+player = new Player()
+seq1.play player
+
 #seq2.play player

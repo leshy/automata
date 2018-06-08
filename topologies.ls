@@ -8,6 +8,8 @@ require! {
   './base.ls': { Topology, CtxState }
 }
 
+# stores states in a list
+# write only, states can't interact
 export class NaiveTopology extends Topology
   (data) ->
     if data then @ <<< data
@@ -22,17 +24,15 @@ export class NaiveTopology extends Topology
   
   _set: (ctxState) -> new @constructor data: @data.push ctxState
 
-
-export class HeuristicTopology extends NaiveTopology
-  -> true
-
-
+# naive storage of discrete multidimensional contexts
+# can read states by specific coordinates
 export class DiscreteTopology extends Topology
   (data) ->
     if data then @ <<< data
     if not @data then @data = new Map()
       
   rawReduce: (seed, cb) -> @data.reduce cb, seed
+  
   inspect: ->
     @data
     .map (.inspect!)
@@ -41,9 +41,7 @@ export class DiscreteTopology extends Topology
   reduce: (cb) -> @data.reduce cb, new @constructor()
 
   get: (coords) ->
-#    console.log @data, coords.join('-')
     @data.get coords.join('-')
     
-  _set: (ctxState) ->
-    new @constructor data: @data.set ctxState.ctx.loc.join('-'), ctxState
+  _set: (ctxState) -> new @constructor data: @data.set ctxState.ctx.loc.join('-'), ctxState
 

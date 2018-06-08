@@ -6,7 +6,7 @@ require! {
   './index.ls': { Topology }
 }
   
-require! { './models/gol.ls': { topology } }
+require! { './models/breakcore.ls': { topology } }
 
 settings = do
   verboseInit: true
@@ -56,11 +56,11 @@ ribcage.init env, (err, env) ->
 
   env.lweb.onQuery ready: true, (msg, reply, { client }) ->
     reply.end ok: true
-#    client.query { render: topo.serialize! }, (msg) -> console.log "render", msg
     client.query { time: 0 }
     
     topo = topology
     times 50, ->
+      console.log topo.serialize!
       client.query { render: topo.serialize!, z: it }, (msg) -> console.log "render", msg
       topo := topo.next!
 
