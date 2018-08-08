@@ -3,7 +3,7 @@ require! {
   colors
   util: { inspect }
   leshdash: {
-    reduce, each, times, zip, defaults, mapFilter, assignWith, flattenDeep, map, keys, clone, filter, identity, push,
+    reduce, each, times, zip, defaults, mapFilter, assignWith, flattenDeep, map, keys, clone, filter, identity, push, times,
     { typeCast }: w
   }: _
 }
@@ -29,19 +29,16 @@ export class Ctx
   inspect: -> colors.red("Ctx(") + JSON.stringify(@ctx) + colors.red(")")
   
   t: (modifier, cb) ->
-    
-    newView = new @constructor(transformed = @applyTransform(modifier), @topo, @newTopo)
-
+    newContext = new @constructor(transformed = @applyTransform(modifier), @topo, @newTopo)
 #    console.log @ctx, "via", modifier, 'becomes', transformed
- 
-    newStates = cb newView
+    newStates = cb newContext
     
     if not newStates then return []
     if newStates@@ isnt Array then newStates = [newStates]
 
     map newStates, (newState) ~>
       switch newState@@
-        | Function => new CtxState(newView.ctx, newState)
+        | Function => new CtxState(newContext.ctx, newState)
         |_ => newState
 
 
@@ -82,7 +79,12 @@ export class Topology
   _set: (ctxState) -> ...
   
   map: (cb) -> @data.map cb
-  
+
+  iterate: (n) ~>
+    topo = @
+    times n, -> topo := topo.next!
+    topo
+    
   next: ->
     @reduce (newTopology, ctxState) ~>
       nextStates = ctxState.next @, newTopology

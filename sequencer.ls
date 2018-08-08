@@ -4,110 +4,97 @@ require! {
   'backbone4000/extras': Backbone
 }
 
-Note = Backbone.Model.extend4000 do
-  initialize: -> @ <<< it
-  inspect: -> "Note(#{@note}, #{@velocity}, #{@sustain})"
-  play: (player, channel=0) ->
-    player.midiOut [ 144 + channel, @note, @velocity or 127 ]
-    setTimeout do
-      (~> player.midiOut [ 128 + channel, @note, 0 ])
-      (@sustain or 1) * 1000
-
-Seq = Backbone.Model.extend4000 do
-  tempo: void
-  
-  inspect: ->
-    "seq(#{@channel})"
-
-  show: ->
-    each @notes, ->
-      console.log it
-    
-  initialize: ({ topo, channel=0 }) ->
-    @channel = channel
-    @index = 0
-    
-    makeNote = ({ ctx, state }) ~> 
-      if state.name isnt "Note" then false
-      else [ ctx.time, new Note(ctx{sustain, note, velocity}) ]
-    
-    @notes = topo.rawReduce [], (total, ctxState) ->
-      if not newNote = makeNote(ctxState) then total
-      else [ ...total, newNote ]
-
-    @notes = sortBy(@notes, ([time, ...rest]) -> time)
+export Event = Backbone.Model.extend4000 do
+  initialize: (data) ->
+    @ <<< switch data?@@
+      | Object => data
+      | void => {}
+      | _ => { "#{@mainproperty or throw 'mainproperty undefined for event class'}": data }
     
 
-  play: (player) ->
-    if @notes.length - 1 is @index then
-      @index = 0
-      @lastTime = 0
-    else
-      @index += 1
-    @lastTime = @lastTime or 0
+export Note = Event.extend4000 do
+  mainproperty: 'note'
+  velocity: 1
+  sustain: 1
+  inspect: (depth, opts) -> "N(#{@note}, #{@velocity}, #{@sustain})"
 
-    [ time, note ] = @notes[@index]
-    console.log "TIME", time, "NOTE", note
-    
-    setTimeout do
-      (~>
-        @play player
-        note.play player, @channel)
-      ((time - @lastTime) * 1000)
+bla = 'lala'
 
-    @lastTime = time
+# holds events in some order with some abstract distance between them
+export Sequence = Backbone.Model.extend4000 do
+  initialize: (@events) -> true
+Sequence::[Symbol.iterator] = ->*
+  yield from @events
 
-StandardInterpreter = (state, defaultNote) ->
-  if not state.note or not state.time then return false
-  else return [ state.time, new Note(defaultNote <<< state{sustain, note, velocity}) ]
-
-Interpret = (topology, interpreter=StandardInterpreter) ->
-  topo.rawReduce [], (total, state) ->
-    if not seqNote = interpreter(state) then return total
-    return [ ...total, seqNote ]
-
-
-Sequencer = Backbone.MotherShip('seq').extend4000 do
-  seqClass: Backbone.Model
-
-Looper = Backbone.MotherShip('seq').extend4000 do
-  seqClass: Seq
-  initialize: ->
-    @input = new midi.input()
-    @output = new midi.output()
-    
-    @input.on 'message', (deltaTime, message) ~>
-      console.log('m:' + message + ' d:' + deltaTime)
-      @output.sendMessage message
-
-    @input.openVirtualPort("Looper IN")
-    @output.openVirtualPort("Looper OUT")
-
-
-Player = Backbone.Model.extend4000 do
+export Midi = Backbone.Model.extend4000 do
   initialize: -> 
     @output = new midi.output()
 #    @output.openVirtualPort("Automata OUT")
     @output.openPort(0)
     
   midiOut: (msg) ->
-    console.log "MIDIOUT", msg
     @output.sendMessage msg
 
-require! { './models/breakcore.ls': { getTopo } }
+# plays sequences
+export Sequencer = Backbone.Model.extend4000 do
+  tempo: 1/8
+  initialize: (...sequences) ->
+    @sequences = sequences
+    
+  play: -> @start()
 
-looper = new Looper()
-topo = getTopo()
-times 150, -> topo := topo.next!
-seq1 = new Seq(channel: 0, topo: topo)
-seq1.show()
+  start: (position=0) ->
+    setInterval (~> @beat(position++)), @tempo * 1000
 
-# topo = getTopo(note: 30, sustain: 0.5)
-# times 50, -> topo := topo.next!
+  beat: (n) ->
+    console.log 'beat', n
+    each @sequences, ->
+      console.log it.get(n)
+    
 
-# seq2 = new Seq(topo: topo)
+# StandardInterpreter = (state, defaultNote) ->
+#   if not state.note or not state.time then return false
+#   else return [ state.time, new Note(defaultNote <<< state{sustain, note, velocity}) ]
 
-player = new Player()
-seq1.play player
+# # turn a topology into a sequence of notes
+# InterpretTopology = (topology, interpreter=StandardInterpreter) ->
+#   topo.rawReduce [], (total, state) ->
+#     if not seqNote = interpreter(state) then return total
+#     return [ ...total, seqNote ]
 
-#seq2.play player
+# Sequencer = Backbone.MotherShip('seq').extend4000 do
+#   seqClass: Backbone.Model
+
+# Looper = Backbone.MotherShip('seq').extend4000 do
+#   seqClass: Sequence
+#   initialize: ->
+#     @input = new midi.input()
+#     @output = new midi.output()
+    
+#     @input.on 'message', (deltaTime, message) ~>
+#       console.log('m:' + message + ' d:' + deltaTime)
+#       @output.sendMessage message
+
+#     @input.openVirtualPort("Looper IN")
+#     @output.openVirtualPort("Looper OUT")
+
+
+# # require! { './models/breakcore.ls': { getTopo } }
+
+# # looper = new Looper()
+# # topo = getTopo()
+# # times 150, -> topo := topo.next!
+# # seq1 = new Seq(channel: 0, topo: topo)
+# # seq1.show()
+
+# # # topo = getTopo(note: 30, sustain: 0.5)
+# # # times 50, -> topo := topo.next!
+
+# # # seq2 = new Seq(topo: topo)
+
+# # player = new Player()
+# # seq1.play player
+
+# # #seq2.play player
+
+

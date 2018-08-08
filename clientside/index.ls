@@ -1,6 +1,6 @@
 require! {
-  './three/general.ls': painter
   bluebird: p
+  './three/general.ls': painter
   'lweb3/transports/client/engineio': lweb
   'lweb3/protocols/query': queryProtocol
   'lweb3/protocols/channel': channelProtocol
@@ -57,3 +57,4 @@ p.all [ wait_document(), connect() ]
 .then broadcastReady
 .then -> console.log 'done'
   
+
