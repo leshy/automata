@@ -31,3 +31,11 @@ describe 'base', ->
     assert.deepEqual do
       topo.serialize!
       [ [ { loc: [ 0, 0.8944271909999159, 1.7888543819998317 ], dir: [ 0, 3, 6 ], speed: 1, size: 1 }, 'Branch' ] ]
+
+  specify 'wolfram', ->
+
+    require! { '../models/wolfram1D.ls': { getRule } }
+    topology = getRule(30)
+#    console.log topology
+    console.log topology.iterate(10)
+    

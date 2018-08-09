@@ -4,18 +4,17 @@ require! {
   '../contexts.ls': { CtxNaiveCoords }
 }
 
-colormover = 10
-
-rndc = (color) ->
-  newColor = (color or 127) + random(-colormover, colormover)
-  if newColor > 255 then newColor = 255
-  if newColor < 0 then newColor = 0
-  newColor
+rndc = (jigglyness) ->
+  (color) -> 
+    newColor = (color or 127) + random(-jigglyness, jigglyness)
+    if newColor > 255 then newColor = 255
+    if newColor < 0 then newColor = 0
+    newColor
 
 rndcBlock = do
-  cr: rndc
-  cg: rndc
-  cb: rndc
+  cr: rndc(10)
+  cg: rndc(10)
+  cb: rndc(10)
 
 placeChecks = (ctx) ->
   map ctx.neighCoords(), (coords) ->
