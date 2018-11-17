@@ -62,37 +62,35 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls, render
       ret = []
       topo.map (ctxState) ->
         [ ctx, state ] = ctxState
-          
         # material = new THREE.LineBasicMaterial do
         #   color: new THREE.Color("rgb(#{ctx.cr or 100}, #{ctx.cg or 100}, #{ctx.cb or 100})")
         # material.transparent = true
         # material.opacity = 0.8
-
         # material = new THREE.MeshPhongMaterial do
         #   color: new THREE.Color("rgb(#{ctx.cr or 100}, #{ctx.cg or 100}, #{ctx.cb or 100})")
 
         color = switch state
           | "Note" => new THREE.Color("white")
+          | "On" =>  new THREE.Color("white")
+#          | "Check" =>  new THREE.Color("green")
           |_ => false
-          
 
         if not color then return
           
         geometry = new THREE.BoxGeometry(ctx.sustain, 1, 1)
-          
         material = new THREE.MeshLambertMaterial do
           color: color
-#          linewidth: 1
+          linewidth: 1
           transparent: true
           opacity: 0.75
           
-        # geometry = new THREE.EdgesGeometry geometry
-        # object = new THREE.LineSegments geometry, material
+        geometry = new THREE.EdgesGeometry geometry
+        object = new THREE.LineSegments geometry, material
 
-        object = new THREE.Mesh geometry, material
-        object.position.x = ctx.time * timeScale
-        object.position.z = 0
-        object.position.y = z 
+#        object = new THREE.Mesh geometry, material
+        object.position.x = ctx.loc[0]
+        object.position.z = ctx.loc[1] or 0
+        object.position.y = ctx.loc[2] or z
 
         # object = new THREE.Mesh geometry, material
         # object.position.x = ctx.loc[0] / 10

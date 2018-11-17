@@ -1,6 +1,6 @@
 require! {
   bluebird: p
-  './three/general.ls': painter
+  './three/turtle3d.ls': painter
   'lweb3/transports/client/engineio': lweb
   'lweb3/protocols/query': queryProtocol
   'lweb3/protocols/channel': channelProtocol
@@ -25,31 +25,31 @@ connect = -> new p (resolve,reject) ~>
   env.lweb.on 'connect', resolve
 
 subscribe = -> new p (resolve,reject) ~>
-  console.log 'subscribe'
   env.lweb.channel("broadcast").join()
-  console.log "JOIN"
   resolve true
 
 createApi = -> new p (resolve,reject) ~>
   console.log 'create api'
   
-  { render, time } = painter.draw(20)
-  
   env.lweb.channel("time").join (msg) ->
     time(msg.time)
-
-  # env.lweb.onQuery { time: Number }, (msg, reply, realm) ->
-  #   console.log "TIME", msg.time
 
   env.lweb.onQuery { render: true }, (msg, reply, realm) ->
     console.log 'render req', msg.render
     render msg.render, (msg.z or 0)
     reply.end { render: true }
+    
   resolve true
 
 broadcastReady = -> new p (resolve,reject) ~>
-  console.log 'broadcast ready'
-  env.lweb.query ready: true, (msg, reply) -> resolve!
+  console.log 'broadcasting ready'
+  
+  { render, time } = painter.draw(20)
+  
+  env.lweb.query ready: true, (msg, reply) ->
+    env.lweb.channel('render').subscribe (msg) ->
+      render msg.render, (msg.z or 0)
+    resolve!
 
 p.all [ wait_document(), connect() ]
 .then subscribe

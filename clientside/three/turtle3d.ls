@@ -21,7 +21,7 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
         { ctx, state } = ctxState
 
         color = ctx.color
-        if ctx.counter > 1 then color = 255 - color
+#        if ctx.counter > 1 then color = 255 - color
           
         material = new THREE.MeshBasicMaterial do
 #          color: new THREE.Color("rgb(#{ctx.cr or 255}, #{ctx.cg or 255}, #{ctx.cb or 255})")

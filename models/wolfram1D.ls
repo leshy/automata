@@ -19,10 +19,11 @@ binaryRule = toBinaryRule(30)
 export class Topo extends DiscreteTopology
   Ctx: CtxNaiveCoords
 
-# can get any rule
-export getRule = (ruleDec) ->
+# can get any of the elementary 1D ca, wolfram notation
+export getRule = (ruleDec, maxsize=Infinity) ->
   rule = toBinaryRule ruleDec
-
+  console.log rule
+  
   placeChecks = (ctx) ->
     map [[-1], [1]], (coords) ->
       future = ctx.lookFuture(coords)
@@ -30,6 +31,7 @@ export getRule = (ruleDec) ->
         ctx.t { loc: coords }, (ctx) -> Check
         
   checkCtx = (ctx, prevState) ->
+    if Math.abs(ctx.ctx.loc[0]) > maxsize then return []
     states = map [ -1, 0, 1 ], ->
       if ctx.look([it])?state is On then true else false
 
@@ -47,3 +49,6 @@ export getRule = (ruleDec) ->
     .set new CtxState({loc: [0]}, On)
     .set new CtxState({loc: [-1]}, Check)
     .set new CtxState({loc: [1]}, Check)
+
+
+#console.log toBinaryRule 102

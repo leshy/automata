@@ -1,8 +1,8 @@
 require! {
   leshdash: { random, sample, map, weighted, times }
-  '../index.ls': { CtxState, CtxCanvas, Sierpinski }
+  '../index.ls': { CtxState, CtxCanvas }
   '../topologies.ls': { NaiveTopology }
-  '../contexts.ls': { Ctx3DTurtle }
+  '../contexts.ls': { CtxNaiveCoords }
 }
 
 modder = 1
@@ -36,7 +36,7 @@ export BranchStart = (ctx) ->
   ret
 
 export class Topo extends NaiveTopology
-  Ctx: Ctx3DTurtle
+  Ctx: CtxNaiveCoords
 
-export topology = new Topo().set new CtxState({loc: [0,0,0], dir: [0,0,0], color: 0, speed: 1, size: 0.1, counter: 0}, BranchStart)
+export topology = new Topo().set new CtxState({dir: [0,0,0], color: 0, speed: 1, size: 0.1, counter: 0}, Branch)
 

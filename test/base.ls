@@ -35,7 +35,7 @@ describe 'base', ->
   specify 'wolfram', ->
 
     require! { '../models/wolfram1D.ls': { getRule } }
-    topology = getRule(30)
-#    console.log topology
-    console.log topology.iterate(10)
+    topology = getRule(122)
+    console.log topology
+    console.log topology.next!
     

@@ -10,7 +10,6 @@ export Event = Backbone.Model.extend4000 do
       | Object => data
       | void => {}
       | _ => { "#{@mainproperty or throw 'mainproperty undefined for event class'}": data }
-    
 
 export Note = Event.extend4000 do
   mainproperty: 'note'
@@ -96,5 +95,4 @@ export Sequencer = Backbone.Model.extend4000 do
 # # seq1.play player
 
 # # #seq2.play player
-
 

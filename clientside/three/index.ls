@@ -25,7 +25,7 @@ export getscene = (distance, cb) ->
   
 
 #  camera  = window.camera = new THREE.OrthographicCamera( -70, 4, 1, 100)
-  camera  = window.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100 );
+  camera  = window.camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
   camera.position.set( 0, 0, distance );
 #  camera.lookAt(new THREE.Vector3( 0, 0, -1 ))
 

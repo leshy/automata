@@ -9,7 +9,7 @@ rndc = (jigglyness) ->
     newColor = (color or 127) + random(-jigglyness, jigglyness)
     if newColor > 255 then newColor = 255
     if newColor < 0 then newColor = 0
-    newColor
+      newColor
 
 rndcBlock = do
   cr: rndc(10)

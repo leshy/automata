@@ -23,11 +23,14 @@ export class Ctx
       if mod@@ is Function then return mod target, @
       if not target? then return mod
       mod + target
-  
+
+  get: (name) -> @ctx[name]
+    
   applyTransform: (mod) -> @standardJoin @ctx, mod
     
   inspect: -> colors.red("Ctx(") + JSON.stringify(@ctx) + colors.red(")")
-  
+
+  # transform context (caled by a state)
   t: (modifier, cb) ->
     newContext = new @constructor(transformed = @applyTransform(modifier), @topo, @newTopo)
 #    console.log @ctx, "via", modifier, 'becomes', transformed
@@ -46,6 +49,7 @@ export class Ctx
 export class CtxState
   (@ctx, @state) -> true
   inspect: -> colors.green("CtxState(") + JSON.stringify(@ctx) + ", " + @state.name + colors.green(")")
+  
   next: (topology, newTopology) ->
     deepf = flattenDeep @state new topology.Ctx @ctx, topology, newTopology
     map do
@@ -88,7 +92,6 @@ export class Topology
   next: ->
     @reduce (newTopology, ctxState) ~>
       nextStates = ctxState.next @, newTopology
-#      console.log ctxState.inspect! +  " -->", nextStates
       newTopology.set ...nextStates
       
   serialize: ->
