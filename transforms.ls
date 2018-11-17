@@ -20,5 +20,5 @@ export turtle = do
       speed
     .toArray()
 
-export brownian = { dir: mapper(randomWalk(1)) } <<< turtle
+export randomTurtle = { dir: mapper(randomWalk(1)) } <<< turtle
 

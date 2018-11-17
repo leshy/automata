@@ -3,13 +3,13 @@ require! {
   '../index.ls': { CtxState, CtxCanvas }
   '../topologies.ls': { NaiveTopology }
   '../contexts.ls': { CtxNaive }
-  '../transforms.ls': { turtle, brownian, mapper }
+  '../transforms.ls': { randomTurtle }
 }
 
 export Branch = (ctx) ->
   ctx.t {
     speed: (*0.96)
-  } <<< brownian, (ctx) ->
+  } <<< randomTurtle, (ctx) ->
       weighted do
         [ 2 / ctx.ctx.size, Branch ]
         [ 1, [ Branch, Branch ] ]
@@ -18,7 +18,7 @@ export Branch = (ctx) ->
 export SimpleBranch = (ctx) ->
   ctx.t {
     speed: (*0.96)
-  } <<< brownian, (ctx) -> [ SimpleBranch ]
+  } <<< randomTurtle, (ctx) -> [ SimpleBranch ]
 
 export BranchStart = (ctx) ->
   ret = []
