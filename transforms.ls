@@ -1,7 +1,7 @@
 require! { three: { Vector3, Vector2 } }
 
 export turtle = do
-  loc: (loc, { ctx: { dir, speed } }) ->
+  loc: (loc, { ctx: { dir, speed }  }) ->
     Vector = switch loc.length
       | 2 => Vector2
       | 3 => Vector3

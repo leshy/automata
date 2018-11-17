@@ -8,4 +8,4 @@ global.i = require('util').inspect
 global.t = topology
 global.l = leshdash
 
-
+console.log topology.next().next()

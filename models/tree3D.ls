@@ -6,6 +6,7 @@ require! {
 }
 
 modder = 1
+
 mover = (pos, ctx) -> map pos, (c) -> c + random(-modder, modder, true)
 
 colormover = 20

@@ -2,24 +2,20 @@ require! {
   leshdash: { random, sample, map, weighted, times, zip }
   '../index.ls': { CtxState, CtxCanvas }
   '../topologies.ls': { NaiveTopology }
-  '../contexts.ls': { CtxNaiveCoords }
+  '../contexts.ls': { CtxNaive }
+  '../transforms.ls': { turtle }
 }
-
-modder = 1
 
 mapper = (f, value) --> map value, f
 brownian = (speed, value) --> value + random(-speed, speed, true)
 
-# # brownian = (pos, ctx) -> map pos, (c) -> c + random(-modder, modder, true)
-# mover = (pos, ctx) ->
-#   pos
+#console.log turtle.loc([0,0,0],{ ctx: { dir: [1,0,0], speed: 2}})
 
 export Branch = (ctx) ->
   ctx.t {
     dir: mapper(brownian(1)),
-    pos: (pos, ctx) -> map zip(pos, ctx.get('dir')), (+)
-    size: (*0.96)
-    }, (ctx) ->
+    speed: (*0.96)
+  } <<< turtle, (ctx) ->
       weighted do
         [ 2 / ctx.ctx.size, Branch ]
         [ 1, [ Branch, Branch ] ]
@@ -30,7 +26,10 @@ export BranchStart = (ctx) ->
   ret
 
 export class Topo extends NaiveTopology
-  Ctx: CtxNaiveCoords
+  Ctx: CtxNaive
 
-export topology = new Topo().set new CtxState({dir: [0,0,0], pos: [0,0,0], speed: 1, size: 1}, Branch)
+export topology = new Topo().set new CtxState do
+  {dir: [0,0,0], loc: [0,0,0], speed: 1, size: 1},
+  Branch
+
 
