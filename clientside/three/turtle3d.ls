@@ -17,8 +17,7 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
   ret = do
     render: (topo, z=0) ->
       topo.map (ctxState) ->
-        { ctx, state } = ctxState
-
+        [ ctx, state ] = ctxState
         color = ctx.color
 #        if ctx.counter > 1 then color = 255 - color
           
@@ -27,12 +26,16 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
           color: new THREE.Color("rgb(#{color},#{color},#{color})")
 
         scale = 1
-        cube = new THREE.Mesh( new THREE.SphereGeometry( ctx.size), material );
-        cube.position.x = ctx.loc[0]
-        cube.position.y = ctx.loc[2]
-        cube.position.z = ctx.loc[1]
+        cube = new THREE.Mesh( new THREE.SphereGeometry( ctx.size ), material );
+        cube.position.x = ctx.pos?[0] or 0
+        cube.position.y = - ctx.pos?[1] or 0
+        cube.position.z = ctx.pos?[2] or 0
         scene.add( cube )
-        
+
+    reset: ->
+      while scene.children.length > 0
+        scene.remove(scene.children[0])
+      
     renderEvo: (topo, n=9, distance=10) ->
       _.times n, (z) ->
         ret.render(topo, z * distance)

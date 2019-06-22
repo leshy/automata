@@ -6,14 +6,18 @@ require! {
   '../transforms.ls': { randomTurtle }
 }
 
+newId = -> Math.floor(Math.random() * 1000)
+
 export Branch = (ctx) ->
   ctx.t {
-    speed: (*0.96)
+    speed: (*0.98)
   } <<< randomTurtle, (ctx) ->
       weighted do
-        [ 2 / ctx.ctx.size, Branch ]
-        [ 1, [ Branch, Branch ] ]
-
+        [ 40 / ctx.ctx.size, Branch ]
+        [ 1, [
+          Branch
+          ctx.t { index: newId }, (ctx) -> Branch
+        ]]
 
 export SimpleBranch = (ctx) ->
   ctx.t {
@@ -29,7 +33,10 @@ export class Topo extends NaiveTopology
   Ctx: CtxNaive
 
 export topology = new Topo().set new CtxState do
-  {dir: [0,0,0], loc: [0,0,0], speed: 1, size: 1},
-  SimpleBranch
+  {dir: [0,0,0], loc: [0,0,0], speed: 1, size: 1, index: 1001},
+  Branch
 
-
+# topo = topology
+# times 10, ->
+#   console.log topo
+#   topo := topo.next()

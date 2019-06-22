@@ -9,7 +9,7 @@
   "scripts": {
     "test": "./node_modules/.bin/mocha test/*.ls",
     "devserver": "./node_modules/.bin/budo clientside/index.ls:bundle.js --exclude jquery --live -- -t browserify-livescript",
-    "make": "./node_modules/.bin/browserify -dt browserify-livescript --exclude jquery -o static/bundle.js clientside/index.ls",
+    "make": "./node_modules/.bin/browserify --debug -t browserify-livescript -d --exclude jquery -o static/bundle.js clientside/index.ls",
     "watch": "./node_modules/.bin/watchify -v -dt browserify-livescript --exclude jquery -o static/bundle.js clientside/index.ls"
   },
   "keywords": [],
@@ -29,13 +29,16 @@
     "leshdash": "git+ssh://git@github.com/leshy/leshdash.git",
     "lweb3": "git+ssh://git@github.com/leshy/lweb3.git",
     "midi": "^0.9.5",
+    "mqtt": "^3.0.0",
     "ribcage": "git+ssh://git@github.com/leshy/ribcage.git",
     "ribcage_express4": "git+ssh://git@github.com/leshy/ribcage_express4.git",
     "ribcage_logger": "git+ssh://git@github.com/leshy/ribcage_logger.git",
+    "supercolliderjs": "^0.14.2",
     "three": "^0.89.0",
     "three-effectcomposer": "0.0.1",
     "three-orbit-controls": "^82.1.0",
-    "vector.js": "^2.0.0"
+    "vector.js": "^2.0.0",
+    "wx": "^0.0.36"
   },
   "devDependencies": {
     "browserify": "^15.1.0",

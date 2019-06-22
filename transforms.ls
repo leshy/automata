@@ -5,20 +5,21 @@ require! {
 
 # single value
 export mapper = (f, value) --> map value, f
-export randomWalk = (maxDelta, value) --> value + random(-maxDelta, maxDelta, true)
 
-# context level
+export brownian = (maxDelta, value) --> value + random(-maxDelta, maxDelta, true)
+
+# context aware
 export turtle = do
-  loc: (loc, { ctx: { dir, speed }  }) ->
-    Vector = switch loc.length
+  pos: (pos, { ctx: { dir, size }  }) ->
+    Vector = switch pos.length
       | 2 => Vector2
       | 3 => Vector3
-      |_ _ => throw new Error "loc has #{loc.length} dimensions, can't build vector"
+      |_ _ => throw new Error "pos has #{pos.length} dimensions, can't build vector"
 
-    (new Vector(...loc)).addScaledVector do
+    (new Vector(...pos)).addScaledVector do
       (new Vector(...dir)).normalize(),
-      speed
+      size
     .toArray()
 
-export randomTurtle = { dir: mapper(randomWalk(1)) } <<< turtle
+export randomTurtle = { dir: mapper(brownian(1)) } <<< turtle
 

@@ -33,7 +33,7 @@ ribcage.init env, (err, env) ->
     logger: env.logger.child!
     verbose: false
 
-    env.lweb.addProtocol new queryProtocol.serverServer verbose: false, logger: false
+  env.lweb.addProtocol new queryProtocol.serverServer verbose: false, logger: false
   env.lweb.addProtocol new channelProtocol.serverServer verbose: false, logger: false
   
   env.lweb.on 'connect', (channel) -> channel.addProtocol new queryProtocol.client verbose: true
@@ -45,26 +45,26 @@ ribcage.init env, (err, env) ->
   }
 
 #  oscServer = new OscServer()
-  renderChannel = env.lweb.channel 'render'
-  
-#  topo = getRule(30, 20)
-  z = 0
-  topo = topology
-
-  console.log 'init osc', topo
-  ping = -> 
-    serialized = topo.serialize!
-    renderChannel.broadcast { render: serialized, z: z }
-    topo := topo.next!
-    z := z + 1
-    mapFilter serialized, ([{loc}, state]) ->
-      if state is 'On' then head loc 
-
-  setInterval ping, 1000
   
   env.lweb.onQuery ready: true, (msg, reply, { client }) ->
-    console.log 'got ready'
+    console.log 'starting topology'
     reply.end ok: true
+    
+    topo = topology
+    
+    ping = -> 
+      topo := topo.next!
+      serialized = topo.serialize!
+      if not serialized.length then
+        clearInterval bla
+      else
+        client.query render: serialized
+
+    bla = setInterval ping, 100
+    
+    client.on 'end', ->
+      console.log "CLIENT END"
+      clearInterval bla
     # times 300, ->
     #   console.log topo.serialize!
     #   client.query { render: topo.serialize!, z: it }, (msg) -> console.log "render", msg
