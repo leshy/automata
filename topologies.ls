@@ -6,7 +6,33 @@ require! {
   }: _
   colors    
   './base.ls': { Topology, CtxState }
+  three: { Vector3, Vector2 }
 }
+
+
+export class DistanceTopology extends Topology
+  (data) ->
+    if data then @ <<< data
+    if not @data then @data = new Map()
+      
+  rawReduce: (seed, cb) -> @data.reduce cb, seed
+  
+  inspect: ->
+    @data
+    .map (.inspect!)
+    .join('\n')
+
+  reduce: (cb) -> @data.reduce cb, new @constructor()
+
+  get: (coords) ->
+    @data.get coords.join('-')
+    
+  _set: (ctxState) -> new @constructor data: @data.set ctxState.ctx.loc.join('-'), ctxState
+
+  look: (pos) ->
+    source = Vector3(...pos)
+    @data.map (source, ctxState) -> (new Vector3(...ctxState.ctx.pos)).sub source
+  
 
 # stores states in a list
 # write only, states can't interact
@@ -44,4 +70,5 @@ export class DiscreteTopology extends Topology
     @data.get coords.join('-')
     
   _set: (ctxState) -> new @constructor data: @data.set ctxState.ctx.loc.join('-'), ctxState
+
 

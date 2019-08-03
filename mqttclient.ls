@@ -1,12 +1,13 @@
 require! {
   mqtt,
-  './models/tree3D.ls': { topology }
+  # './models/tree3D.ls': { topology }
+  './models/brownian3d.ls': { topology }
 }
 
 client  = mqtt.connect 'mqtt://localhost'
  
 client.on 'connect', -> 
-  client.subscribe 'turtle3d'
+  # client.subscribe 'turtle3d'
   
   topo = topology
   client.publish 'turtle3d', JSON.stringify(cmd: 'reset')
