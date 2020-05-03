@@ -14,6 +14,7 @@ require! {
 
 export class Ctx2D extends Ctx
   _move: (v1, v2, rotation, scale=1) ->
+    console.log "MOVE", v1, v2, scale
     radians = (d) -> d * Math.PI / 180
 
     r = radians rotation
@@ -23,7 +24,6 @@ export class Ctx2D extends Ctx
     
     x2 = (Math.cos(r) * x) - (Math.sin(r) * y)
     y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
-
     
     { x: v1.x + x2, y: v1.y + y2 }
 

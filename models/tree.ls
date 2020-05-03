@@ -1,6 +1,6 @@
 require! {
   leshdash: { random, sample }
-  '../index.ls': { CtxState, CtxNaive, NaiveTopology }
+  '../index.ls': { CtxState, Ctx2D, NaiveTopology }
 }
 
 rndc = (color) ->
@@ -10,22 +10,36 @@ rndc = (color) ->
     
 cmod = 30
 
-export Branch = (ctx) ->  
+export Branch = (ctx) -> 
   ctx.t do
   
-    cr: rndc
-    cg: rndc
-    cb: rndc
-    
+    # cr: rndc
+    # cg: rndc
+    # cb: rndc
+    x: 0.3
+    y: 0.3
     r: random(-60, 60)
     s: (*0.9)
-    x: 1,
 
     ->
       sample [
-        # [ Branch, Branch ],
+        [ Branch, Branch ],
+        Branch,
+        Branch,
+        Branch,
+        Branch,
+        Branch,
+        Branch,
+        Branch,
+        Branch,
+        Branch,
+        Branch,
+        Branch,
         Branch,
       ]
 
-export topology = new NaiveTopology().set new CtxState(new CtxNaive(x: 0, y: 0, s: 1, r: 90), Branch)
+export class Topo extends NaiveTopology
+  Ctx: Ctx2D
+  
+export topology = new Topo().set(new CtxState(x: 1, y: 1, s: 10, r: 90, Branch)).set(new CtxState(x: 1, y: 1, s: 10, r: 90, Branch)).set(new CtxState(x: 1, y: 1, s: 10, r: 90, Branch))
 

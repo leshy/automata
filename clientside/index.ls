@@ -1,6 +1,6 @@
 require! {
   bluebird: p
-  './three/turtle3d.ls': painter
+  './three/turtle.ls': painter
   mqtt
 }
 
@@ -28,7 +28,7 @@ p.all [ connect() ]
   
   env.client.on 'message', (topic, message) ->
     parsed = JSON.parse(message.toString())
-    console.log parsed.cmd
+    # console.log parsed.cmd
     switch parsed.cmd
      | 'data' => render parsed.data, (parsed.z or 0)
      | 'reset' => reset()

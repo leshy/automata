@@ -27,6 +27,9 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls, render
   # directionalLight.castShadow = true
   # scene.add( directionalLight );
   ret = do
+    reset: ->
+      while scene.children.length > 0
+        scene.remove(scene.children[0])
     render: (topo, z=0) ->
       ret = []
       topo.map (ctxState) ->
