@@ -13,7 +13,6 @@ move = (v1, v2, rotation, size=1) ->
   y2 = (Math.sin(r) * x) + (Math.cos(r) * y)
   { x: v1.x + x2, y: v1.y + y2 }
 
-
 export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
 
   window.scene = scene
@@ -28,17 +27,13 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
 
   window.project = ->
     scene.children.map (child) ->
-      child.geometry.vertices.map (v) ->
-
-        const { x, y, z } = v.project(camera)
-        geometry = new THREE.PlaneGeometry(0.1,0.1)
+      child?geometry?vertices?map (v) ->
+        const { x, y } = v.project(camera)
+        geometry = new THREE.PlaneGeometry(0.01,0.01)
         material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} )
         plane = new THREE.Mesh( geometry, material )
         plane.position.x = x
         plane.position.y = y
-        plane.position.z = 0
-        console.log(x,y,z)
-        
         scene.add(plane)
         
     gridHelper(scene)
@@ -49,10 +44,6 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
     grid.geometry.rotateX( Math.PI / 2 )
     scene.add( grid )
 
-
-  # gridHelper(scene)
-
-  
   ret = do
     reset: ->
       while scene.children.length > 0
@@ -71,7 +62,6 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
       # scene.add( cube )
       # while scene.children.length > 0
       #   scene.remove(scene.children[0])
-      console.log(z)
       topo.map (ctxState) ->
           
         [ ctx, state ] = ctxState
@@ -83,9 +73,9 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
 
         scale = 1
                         
-        geometry.vertices.push( new THREE.Vector3(ctx.x, ctx.y, z))
+        geometry.vertices.push( new THREE.Vector3(ctx.x + z, ctx.y + z, z))
         { x, y } = move({x: (ctx.x), y: (ctx.y)}, { x: -ctx.s, y: 0 }, ctx.r, 1)
-        geometry.vertices.push( new THREE.Vector3(x * scale, y * scale, z))
+        geometry.vertices.push( new THREE.Vector3((x * scale) + z, (y * scale) + z, z))
         
         object = new THREE.Line( geometry, material )
 
@@ -95,9 +85,9 @@ export draw = (distance) -> getscene distance, ({scene, camera, controls}) ->
         scene.add( object )
 
         
-    renderEvo: (topo, n=9, distance=10) ->   
+    renderEvo: (topo, n=8, distance=2.5) ->  
       _.times n, (z) ->
-        ret.render(topo, z * distance)
+        ret.render(topo.serialize(), z * distance)
         topo := topo.next!
         # console.log topo
 

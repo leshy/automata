@@ -1,6 +1,7 @@
 require! {
   bluebird: p
   './three/turtle.ls': painter
+  '../models/sierpinski.ls': { topology }
   mqtt
 }
 
@@ -21,8 +22,11 @@ connect = -> new p (resolve,reject) ~>
 
 p.all [ connect() ]
 .then (data) ->
-  { render, time, reset } = painter.draw(20)
+  {renderEvo, render, time, reset } = painter.draw(20)
 
+
+  renderEvo(topology)
+  
   env.client.subscribe 'turtle3d', (err) ->
     console.log 'subscribe', err
   
@@ -32,6 +36,5 @@ p.all [ connect() ]
     switch parsed.cmd
      | 'data' => render parsed.data, (parsed.z or 0)
      | 'reset' => reset()
-    
-      
+          
 
