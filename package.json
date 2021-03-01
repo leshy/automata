@@ -34,7 +34,7 @@
     "ribcage_express4": "git+ssh://git@github.com/leshy/ribcage_express4.git",
     "ribcage_logger": "git+ssh://git@github.com/leshy/ribcage_logger.git",
     "supercolliderjs": "^0.14.2",
-    "three": "^0.89.0",
+    "three": "^0.125.0",
     "three-effectcomposer": "0.0.1",
     "three-orbit-controls": "^82.1.0",
     "vector.js": "^2.0.0",
