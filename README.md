@@ -8,7 +8,9 @@ should be able to simulate transformation rule based generation like L-systems, 
 
 spaces are immutable objects, machines are functions returning other machines potentially with the parent machine context transformed.
 
-views, storage and controllers are implemented as plugins
+views, storage and controllers are implemented as plugins, to be used depending on the system to be displayed
+
+the language itself is inspired by (among other things) https://www.contextfreeart.org/
 
 ## Deterministic L-systems
 ![s3d](samples/s3d.jpg)
